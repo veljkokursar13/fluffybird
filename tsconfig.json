@@ -1,6 +1,36 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true
-  }
+    "target": "ESNext",
+    "module": "ESNext",
+    "jsx": "react-jsx",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@game.tsx": [
+        "app/game.tsx"
+      ],
+      "@/*": [
+        "*"
+      ],
+      "@app/*": [
+        "app/*"
+      ],
+      "@src/*": [
+        "src/*"
+      ]
+    },
+    "types": [
+      "react",
+      "react-native",
+      "expo-router"
+    ]
+  },
+  "include": [
+    "app",
+    "src"
+  ]
 }
