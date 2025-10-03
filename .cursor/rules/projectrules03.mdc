@@ -1,0 +1,15 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Components
+- Functional components with explicit props types.
+- Keep Skia nodes flat; prefer groups and paths over nested components.
+
+# Assets
+- Sprite sheets in /assets with an assets.json manifest (sizes, frame count).
+- Load once, cache handles, and reference dimensions from the manifest.
+
+# Naming
+- Components: PascalCase, hooks: useX, systems: verbNoun (spawnPipes), physics: nounPhysics (birdPhysics).

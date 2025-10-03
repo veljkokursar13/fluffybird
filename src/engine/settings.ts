@@ -1,26 +1,44 @@
+// Only configuration values
 import { Dimensions } from 'react-native';
+import type { Config } from './types';
 
-// Screen
-export const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
-// Bird
-export const BIRD_SIZE = 48;
-export const BIRD_START_X = Math.round(SCREEN_WIDTH * 0.25);
-export const BIRD_START_Y = Math.round(SCREEN_HEIGHT * 0.5);
+export const CONFIG: Readonly<Config> = {
+  screen: { width, height, floorY: height - 80 },
+  bird: {
+    size: 48,
+    startX: Math.round(width * 0.25),
+    startY: Math.round(height * 0.5),
+    radius: Math.round(width * 0.05),
+  },
+  physics: {
+    gravity: 1400,
+    jumpVelocity: -480,
+    maxFallSpeed: 900,
+    dt: 1 / 60,
+  },
+  pipe: {
+    width: 80,
+    speed: 240,
+    height: 400, // Individual pipe segment height
+    // Gap between top and bottom pipe in a pair
+    minGap: 120,  // Minimum gap for bird to pass through
+    maxGap: 180,  // Maximum gap (easier)
+    // Spacing between consecutive pipe pairs
+    minSpacing: 200, // Minimum distance between pipe pairs
+    maxSpacing: 300, // Maximum distance between pipe pairs
+  },
+};
 
-// Physics
-export const GRAVITY = 1400;      // px / sec^2
-export const JUMP_VELOCITY = -480; // px / sec (negative = up)
-export const MAX_FALL_SPEED = 900; // clamp fall speed
-
-// Pipes
-export const PIPE_WIDTH = 80;
-export const PIPE_SPACING = 220;   // horizontal distance between pipes
-export const PIPE_GAP = 160;       // vertical gap between top and bottom pipe
-export const PIPE_SPEED = 240;     // px / sec scrolling speed
-
-// Ground (optional, for floor line)
-export const GROUND_HEIGHT = 80;
-
-// Game
+// Legacy exports for backward compatibility
+export const BIRD_SIZE = CONFIG.bird.size;
+export const BIRD_START_X = CONFIG.bird.startX;
+export const BIRD_START_Y = CONFIG.bird.startY;
+export const GRAVITY = CONFIG.physics.gravity;
+export const JUMP_VELOCITY = CONFIG.physics.jumpVelocity;
+export const MAX_FALL_SPEED = CONFIG.physics.maxFallSpeed;
+export const PIPE_WIDTH = CONFIG.pipe.width;
+export const PIPE_SPEED = CONFIG.pipe.speed;
+export const GROUND_HEIGHT = CONFIG.screen.floorY;
 export const FPS = 1 / 60; 

@@ -5,7 +5,6 @@ module.exports = function (api) {
       'babel-preset-expo',
     ],
     plugins: [
-        require.resolve('expo-router/babel'),
         [
           'module-resolver',
           {
@@ -16,10 +15,11 @@ module.exports = function (api) {
               '@': './',
               '@app': './app',
               '@src': './src',
+              '@assets': './assets',
             },
           },
         ],
-        'react-native-reanimated/plugin',
+        'react-native-worklets/plugin', // Must be last for Reanimated v4+
       
     ],
   };

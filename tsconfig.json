@@ -21,6 +21,9 @@
       ],
       "@src/*": [
         "src/*"
+      ],
+      "@assets/*": [
+        "assets/*"
       ]
     },
     "types": [
