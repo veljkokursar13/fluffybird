@@ -347,6 +347,7 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
           positions={[0, 1]}
         />
       </Rect>
+      {/* PipeSprite usage removed */}
       {birdImg && (
         <AnimatedBird
           width={width}
