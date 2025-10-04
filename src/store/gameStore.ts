@@ -10,6 +10,8 @@ interface GameStore {
   gameState: GameState;
   score: number;
   bestScore: number;
+  // Input animation ticks
+  flapTick: number;
   // Sound state
   muted: boolean;
   setMuted: (muted: boolean) => void;
@@ -43,6 +45,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   muted: false,
   bird: initialBird,
   pipes: [],
+  flapTick: 0,
   
   // Actions
   setGameState: (gameState) => set({ gameState }),
@@ -80,5 +83,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
       ...state.bird,
       vel: { ...state.bird.vel, y: CONFIG.physics.jumpVelocity },
     },
+    flapTick: state.flapTick + 1,
   })),
 }));

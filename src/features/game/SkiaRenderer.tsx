@@ -4,23 +4,106 @@ import {useMemo, useEffect, useState, useCallback} from "react";
 import type { Bird } from "../../engine/types";
 import { CONFIG } from "../../engine/settings";
 import { useTicker } from "../../hooks/useTicker";
+import { useGameStore } from "../../store/gameStore";
 
-function AnimatedBird({ width: _width, height: _height, groundHeight: _groundHeight, birdImg, bird }: { width: number; height: number; groundHeight: number; birdImg: ReturnType<typeof useImage>; bird: Bird }) {
+function AnimatedBird({
+  width: _width,
+  height: _height,
+  groundHeight: _groundHeight,
+  birdImg,
+  bird,
+  wingUpImg,
+  wingCenterUpperImg,
+  wingCenterLowerImg,
+  wingBottomImg,
+  flapTick,
+}: {
+  width: number;
+  height: number;
+  groundHeight: number;
+  birdImg: ReturnType<typeof useImage> | null;
+  bird: Bird;
+  wingUpImg: ReturnType<typeof useImage> | null;
+  wingCenterUpperImg: ReturnType<typeof useImage> | null;
+  wingCenterLowerImg: ReturnType<typeof useImage> | null;
+  wingBottomImg: ReturnType<typeof useImage> | null;
+  flapTick: number;
+}) {
   if (!birdImg) return null;
+
+  const [currentWing, setCurrentWing] = useState<
+    "centerUpper" | "up" | "centerLower" | "bottom"
+  >("centerUpper");
+
+  useEffect(() => {
+    // On each tap, play a quick sequence through all frames, then return to center
+    const sequence: Array<"up" | "centerUpper" | "centerLower" | "bottom"> = [
+      "up",
+      "centerUpper",
+      "centerLower",
+      "bottom",
+    ];
+    const timeouts: number[] = [];
+    const frameMs = 50;
+    sequence.forEach((frame, idx) => {
+      const id = setTimeout(() => setCurrentWing(frame), idx * frameMs) as unknown as number;
+      timeouts.push(id);
+    });
+    // Return to center after the last frame
+    const resetId = setTimeout(() => setCurrentWing("centerUpper"), sequence.length * frameMs) as unknown as number;
+    timeouts.push(resetId);
+    return () => {
+      timeouts.forEach((id) => clearTimeout(id));
+    };
+  }, [flapTick]);
 
   // Size sprite as a square using physics diameter so bottom aligns with floor clamp
   const diameter = Math.max(1, Math.round(bird.r * 2));
   const drawW = diameter;
   const drawH = diameter;
 
+  // Wing sizing: 50% of bird diameter, preserve image aspect
+  const chosenWingImg = (
+    currentWing === "up"
+      ? wingUpImg
+      : currentWing === "centerUpper"
+      ? wingCenterUpperImg
+      : currentWing === "centerLower"
+      ? wingCenterLowerImg
+      : wingBottomImg
+  );
+
+  const wingWidth = Math.round(diameter * 0.5);
+  let wingHeight = wingWidth;
+  if (chosenWingImg && chosenWingImg.width() > 0) {
+    wingHeight = Math.round(
+      chosenWingImg.height() * (wingWidth / chosenWingImg.width())
+    );
+  }
+
+  // Position the wing slightly left and a bit lower than center of the bird
+  const wingX = bird.pos.x - wingWidth * 0.35;
+  const wingY = bird.pos.y - wingHeight * 0.1;
+
   return (
-    <SkImage
-      image={birdImg}
-      x={bird.pos.x - drawW / 2}
-      y={bird.pos.y - drawH / 2}
-      width={drawW}
-      height={drawH}
-    />
+    <>
+      <SkImage
+        image={birdImg}
+        x={bird.pos.x - drawW / 2}
+        y={bird.pos.y - drawH / 2}
+        width={drawW}
+        height={drawH}
+      />
+      {chosenWingImg && (
+        <SkImage
+          image={chosenWingImg}
+          x={wingX}
+          y={wingY}
+          width={wingWidth}
+          height={wingHeight}
+        />
+      )}
+    </>
   );
 }
 
@@ -124,6 +207,7 @@ function pipeCreator(args: {
 
 export default function SkiaRenderer({ bird }: { bird: Bird }) {
   const { width, height } = useWindowDimensions();
+  const flapTick = useGameStore((s) => s.flapTick);
   const groundImg = useImage(require('@assets/images/ground.png'));
   const sunImg = useImage(require('@assets/images/sun.png'));
   const cityBackgroundImg = useImage(require('@assets/images/citybgbackround.png'));
@@ -132,6 +216,10 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
   const pipeCapImg = useImage(require('@assets/images/pipecap.png'));
   const bushImg = useImage(require('@assets/images/bushes.png'));
   const birdImg = useImage(require('@assets/images/birdmain.png'));
+  const birdWingUpImg = useImage(require('@assets/images/wingup.png'));
+  const birdWingCenterUpperImg = useImage(require('@assets/images/wingcenterupper.png'));
+  const birdWingCenterLowerImg = useImage(require('@assets/images/wingcenterlower.png'));
+  const birdWingBottomImg = useImage(require('@assets/images/wingbottom.png'));
 
 
   const groundTop = CONFIG.screen.floorY;
@@ -154,9 +242,10 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
     return Math.round(cityForegroundImg.height() * (width / cityForegroundImg.width()));
   }, [cityForegroundImg, width]);
 
-  // Example dimensions for static demo rendering; size control lives elsewhere
-  const demoPipeWidth = useMemo(() => CONFIG.pipe.width, []);
-  const demoPipeBodyHeight = useMemo(() => CONFIG.pipe.height, []);
+  const pipeHeight = useMemo(() => {
+    if (!pipeImg) return 0;
+    return Math.round(pipeImg.height() * (width / pipeImg.width()) * 0.1); // Make pipe 10% of original size
+  }, [pipeImg, width]);
 
   const bushHeight = useMemo(() => {
     if (!bushImg) return 0;
@@ -304,15 +393,13 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
           />
         </>
       )}
-      {/* Static example: render a single pipe using pipeCreator; movement/size are controlled elsewhere */}
-      {pipeBodyImg && pipeCapImg && pipeCreator({
-        x: Math.round(width * 0.2),
-        bottomY: groundTop,
-        bodyHeight: demoPipeBodyHeight,
-        pipeWidth: demoPipeWidth,
-        bodyImg: pipeBodyImg,
-        capImg: pipeCapImg,
-      })}
+        <SkImage 
+         image={pipeImg} 
+         x={width * 0.2} 
+         y={groundTop - pipeHeight + 25} 
+         width={width * 0.1} 
+         height={pipeHeight} 
+       />
        <SkImage 
         image={groundImg} 
         x={0} 
@@ -331,7 +418,18 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
         />
       </Rect>
       {birdImg && (
-        <AnimatedBird width={width} height={height} groundHeight={groundHeight} birdImg={birdImg} bird={bird} />
+        <AnimatedBird
+          width={width}
+          height={height}
+          groundHeight={groundHeight}
+          birdImg={birdImg}
+          bird={bird}
+          wingUpImg={birdWingUpImg}
+          wingCenterUpperImg={birdWingCenterUpperImg}
+          wingCenterLowerImg={birdWingCenterLowerImg}
+          wingBottomImg={birdWingBottomImg}
+          flapTick={flapTick}
+        />
       )}
       {/* ...Pipes, Bird, HUD next */}
     </Canvas>
