@@ -5,6 +5,7 @@ import type { Bird } from "../../engine/types";
 import { CONFIG } from "../../engine/settings";
 import { useTicker } from "../../hooks/useTicker";
 import { useGameStore } from "../../store/gameStore";
+import PipeSprite from "./PipeSprite";
 
 function AnimatedBird({
   width: _width,
@@ -199,7 +200,9 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
     return Math.round(cityForegroundImg.height() * (width / cityForegroundImg.width()));
   }, [cityForegroundImg, width]);
 
-  // (no pipe dimensions here)
+  // Demo pipe dimensions; spawning/positioning controlled elsewhere
+  const demoPipeWidth = useMemo(() => CONFIG.pipe.width, []);
+  const demoPipeBodyHeight = useMemo(() => CONFIG.pipe.height, []);
 
   const bushHeight = useMemo(() => {
     if (!bushImg) return 0;
@@ -329,7 +332,14 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
           />
         </>
       )}
-      {/* (pipe rendering removed) */}
+      {/* Pipes should render above city/bushes, but below ground and bird */}
+      <PipeSprite
+        x={Math.round(width * 0.6)}
+        y={groundTop}
+        width={demoPipeWidth}
+        height={demoPipeBodyHeight}
+        orientation="bottom"
+      />
        <SkImage 
         image={groundImg} 
         x={0} 
