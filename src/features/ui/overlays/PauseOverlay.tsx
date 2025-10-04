@@ -5,13 +5,19 @@ import PlayButton from '../buttons/PlayButton';
 import RestartButton from '../buttons/RestartButton';
 import { BlurView } from 'expo-blur';
 import BestScoreDisplay from '../common/BestScoreDisplay';
+import { overlayStyles } from '../../../styles/styles';
+import SoundSettingButton from '../buttons/SoundSettingButton';
 
 export default function PauseOverlay() {
+  const gameState = useGameStore((state) => state.gameState);
   const setGameState = useGameStore((state) => state.setGameState);
   const resetGame = useGameStore((state) => state.resetGame);
   const backToMenu = useGameStore((state) => state.backToMenu);
   const score = useGameStore((state) => state.score);
   const bestScore = useGameStore((state) => state.bestScore);
+
+  if (gameState !== 'paused') return null;
+
   const handleResume = () => {
     setGameState('playing');
   };
@@ -27,17 +33,17 @@ export default function PauseOverlay() {
   };
 
   return (
-    <View style={PauseOverlayStyles.container}>
-      <BlurView intensity={30} tint="light" style={PauseOverlayStyles.blur} />
-      <View style={PauseOverlayStyles.positionTop}>
-      <BestScoreDisplay bestScore={bestScore} currentScore={score}/>
-      </View>
-      <View style={PauseOverlayStyles.pauseContent}>
-        <View style={PauseOverlayStyles.buttonContainer}>
+    <View style={overlayStyles.overlay}>
+      <BlurView intensity={50} tint="dark" style={StyleSheet.absoluteFill} />
+      <SoundSettingButton />
+      <View style={overlayStyles.modal}>
+        <Text style={[overlayStyles.modalTitle, PauseOverlayLocalStyles.title]}>Paused</Text>
+        <View style={overlayStyles.modalContent}>
+          <BestScoreDisplay bestScore={bestScore} currentScore={score} />
+        </View>
+        <View style={overlayStyles.verticalButtonContainer}>
           <PlayButton onPress={handleResume} title="Resume" />
           <RestartButton onPress={handleRestart} title="Restart" />
-        </View>
-        <View style={PauseOverlayStyles.singleButtonContainer}>
           <PlayButton onPress={handleMenu} title="Back to Menu" />
         </View>
       </View>
@@ -45,49 +51,9 @@ export default function PauseOverlay() {
   );
 }
 
-const PauseOverlayStyles = StyleSheet.create({
-  positionTop: {
-    position: 'absolute',
-    top: 70,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    alignItems: 'center',
-  },
-  container: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flex: 1,
-  },
-  blur: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-  },
-  pauseContent: {
-    padding: 20,
-    borderRadius: 10,
-  },
- 
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 12,
-    width: '100%',
-    marginBottom: 12,
-  },
-  singleButtonContainer: {
-    width: '100%',
-    alignItems: 'center',
-    //position it in the center beneath other two buttons
-   
+const PauseOverlayLocalStyles = StyleSheet.create({
+  title: {
+    textAlign: 'center',
+    alignSelf: 'stretch',
   },
 });

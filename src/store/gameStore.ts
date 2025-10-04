@@ -10,6 +10,10 @@ interface GameStore {
   gameState: GameState;
   score: number;
   bestScore: number;
+  // Sound state
+  muted: boolean;
+  setMuted: (muted: boolean) => void;
+  toggleMuted: () => void;
   
   // Game entities
   bird: Bird;
@@ -36,11 +40,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
   gameState: 'menu',
   score: 0,
   bestScore: 0,
+  muted: false,
   bird: initialBird,
   pipes: [],
   
   // Actions
   setGameState: (gameState) => set({ gameState }),
+  setMuted: (muted) => set({ muted }),
+  toggleMuted: () => set((state) => ({ muted: !state.muted })),
   
   incrementScore: () => set((state) => {
     const newScore = state.score;

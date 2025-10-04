@@ -1,21 +1,30 @@
 import { Canvas, Rect, LinearGradient, useImage, Image as SkImage, RadialGradient } from "@shopify/react-native-skia";
 import { useWindowDimensions } from "react-native";
-import {useMemo, useEffect, useState} from "react";
+import {useMemo, useEffect, useState, useCallback} from "react";
+import type { Bird } from "../../engine/types";
+import { CONFIG } from "../../engine/settings";
+import { useTicker } from "../../hooks/useTicker";
 
-function AnimatedSky({ width, height, groundHeight, sunImg }: { width: number; height: number; groundHeight: number; sunImg: ReturnType<typeof useImage> }) {
-  const [elapsed, setElapsed] = useState(0);
-  useEffect(() => {
-    let raf: number;
-    let startTs: number | null = null;
-    const loop = (now: number) => {
-      if (startTs === null) startTs = now;
-      const seconds = (now - startTs) / 1000;
-      setElapsed(seconds);
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
-  }, []);
+function AnimatedBird({ width: _width, height: _height, groundHeight: _groundHeight, birdImg, bird }: { width: number; height: number; groundHeight: number; birdImg: ReturnType<typeof useImage>; bird: Bird }) {
+  if (!birdImg) return null;
+
+  // Size sprite as a square using physics diameter so bottom aligns with floor clamp
+  const diameter = Math.max(1, Math.round(bird.r * 2));
+  const drawW = diameter;
+  const drawH = diameter;
+
+  return (
+    <SkImage
+      image={birdImg}
+      x={bird.pos.x - drawW / 2}
+      y={bird.pos.y - drawH / 2}
+      width={drawW}
+      height={drawH}
+    />
+  );
+}
+
+function AnimatedSky({ width, height, groundHeight, sunImg, elapsed }: { width: number; height: number; groundHeight: number; sunImg: ReturnType<typeof useImage>; elapsed: number }) {
 
   const start = { x: 0, y: 0 } as const;
   const end = { x: 0, y: height + height * 0.02 * Math.sin((2 * Math.PI * elapsed) / 30) } as const;
@@ -69,7 +78,7 @@ function AnimatedSky({ width, height, groundHeight, sunImg }: { width: number; h
   );
 }
 
-export default function SkiaRenderer() {
+export default function SkiaRenderer({ bird }: { bird: Bird }) {
   const { width, height } = useWindowDimensions();
   const groundImg = useImage(require('@assets/images/ground.png'));
   const sunImg = useImage(require('@assets/images/sun.png'));
@@ -77,11 +86,18 @@ export default function SkiaRenderer() {
   const cityForegroundImg = useImage(require('@assets/images/citybg.png'));
   const pipeImg = useImage(require('@assets/images/pipefull.png'));
   const bushImg = useImage(require('@assets/images/bushes.png'));
+  const birdImg = useImage(require('@assets/images/birdmain.png'));
 
+
+  const groundTop = CONFIG.screen.floorY;
+  const groundThickness = Math.max(0, height - groundTop);
   const groundHeight = useMemo(() => {
-    if (!groundImg) return 0;
+    if (!groundImg) return groundThickness;
     return Math.round(groundImg.height() * (width / groundImg.width()));
   }, [groundImg, width]);
+
+  // Central sky time driven by centralized ticker
+  const [skyElapsed, setSkyElapsed] = useState(0);
 
   const cityBackgroundHeight = useMemo(() => {
     if (!cityBackgroundImg) return 0;
@@ -124,24 +140,14 @@ export default function SkiaRenderer() {
 
   const [bushOffset, setBushOffset] = useState(0);
 
-  useEffect(() => {
-    let raf: number;
-    let lastTs: number | null = null;
-    const loop = (ts: number) => {
-      if (lastTs === null) lastTs = ts;
-      const dt = (ts - lastTs) / 1000;
-      lastTs = ts;
-      setBushOffset(prev => {
-        let next = prev - bushSpeed * dt;
-        const tileSpan = bushImgWidth - bushOverlap;
-        if (next <= -tileSpan) next += tileSpan;
-        return next;
-      });
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
-  }, [bushSpeed, bushImgWidth]);
+  const tickBushes = useCallback((dt: number) => {
+    setBushOffset(prev => {
+      let next = prev - bushSpeed * dt;
+      const tileSpan = bushImgWidth - bushOverlap;
+      if (next <= -tileSpan) next += tileSpan;
+      return next;
+    });
+  }, [bushSpeed, bushImgWidth, bushOverlap]);
 
   // City background parallax (farthest)
   const cityBgSpeed = useMemo(() => {
@@ -156,43 +162,30 @@ export default function SkiaRenderer() {
   const [cityBgOffset, setCityBgOffset] = useState(0);
   const [cityFgOffset, setCityFgOffset] = useState(0);
 
-  useEffect(() => {
+  const tickCityBg = useCallback((dt: number) => {
     if (!cityBackgroundImg) return;
-    let raf: number;
-    let lastTs: number | null = null;
-    const loop = (ts: number) => {
-      if (lastTs === null) lastTs = ts;
-      const dt = (ts - lastTs) / 1000;
-      lastTs = ts;
-      setCityBgOffset(prev => {
-        let next = prev - cityBgSpeed * dt;
-        if (next <= -width) next += width;
-        return next;
-      });
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
+    setCityBgOffset(prev => {
+      let next = prev - cityBgSpeed * dt;
+      if (next <= -width) next += width;
+      return next;
+    });
   }, [cityBackgroundImg, cityBgSpeed, width]);
 
-  useEffect(() => {
+  const tickCityFg = useCallback((dt: number) => {
     if (!cityForegroundImg) return;
-    let raf: number;
-    let lastTs: number | null = null;
-    const loop = (ts: number) => {
-      if (lastTs === null) lastTs = ts;
-      const dt = (ts - lastTs) / 1000;
-      lastTs = ts;
-      setCityFgOffset(prev => {
-        let next = prev - cityFgSpeed * dt;
-        if (next <= -width) next += width;
-        return next;
-      });
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
+    setCityFgOffset(prev => {
+      let next = prev - cityFgSpeed * dt;
+      if (next <= -width) next += width;
+      return next;
+    });
   }, [cityForegroundImg, cityFgSpeed, width]);
+
+  useTicker((dt) => {
+    tickBushes(dt);
+    tickCityBg(dt);
+    tickCityFg(dt);
+    setSkyElapsed((e) => e + dt);
+  });
 
 
 
@@ -200,14 +193,14 @@ export default function SkiaRenderer() {
   if(!groundImg) return null;
 
   return (
-    <Canvas style={{ width, height }}>
-      <AnimatedSky width={width} height={height} groundHeight={groundHeight} sunImg={sunImg} />
+    <Canvas style={{ width, height }} pointerEvents="none">
+      <AnimatedSky width={width} height={height} groundHeight={groundThickness} sunImg={sunImg} elapsed={skyElapsed} />
       
       {/* Subtle atmospheric haze above the city */}
-      <Rect x={0} y={height - groundHeight - Math.min(160, height * 0.2)} width={width} height={Math.min(160, height * 0.2)} blendMode="srcOver">
+      <Rect x={0} y={groundTop - Math.min(160, height * 0.2)} width={width} height={Math.min(160, height * 0.2)} blendMode="srcOver">
         <LinearGradient
-          start={{ x: 0, y: height - groundHeight - Math.min(160, height * 0.2) }}
-          end={{ x: 0, y: height - groundHeight }}
+          start={{ x: 0, y: groundTop - Math.min(160, height * 0.2) }}
+          end={{ x: 0, y: groundTop }}
           colors={["rgba(255,140,105,0.08)", "rgba(255,140,105,0)"]}
           positions={[0, 1]}
         />
@@ -218,14 +211,14 @@ export default function SkiaRenderer() {
           <SkImage 
             image={cityBackgroundImg} 
             x={cityBgOffset} 
-            y={height - cityBackgroundHeight - groundHeight } 
+            y={groundTop - cityBackgroundHeight }
             width={width} 
             height={cityBackgroundHeight} 
           />
           <SkImage 
             image={cityBackgroundImg} 
             x={cityBgOffset + width} 
-            y={height - cityBackgroundHeight - groundHeight } 
+            y={groundTop - cityBackgroundHeight } 
             width={width} 
             height={cityBackgroundHeight} 
           />
@@ -236,14 +229,14 @@ export default function SkiaRenderer() {
           <SkImage 
             image={cityForegroundImg} 
             x={cityFgOffset} 
-            y={height - cityForegroundHeight - groundHeight} 
+            y={groundTop - cityForegroundHeight}
             width={width} 
             height={cityForegroundHeight} 
           />
           <SkImage 
             image={cityForegroundImg} 
             x={cityFgOffset + width} 
-            y={height - cityForegroundHeight - groundHeight} 
+            y={groundTop - cityForegroundHeight}
             width={width} 
             height={cityForegroundHeight} 
           />
@@ -254,14 +247,14 @@ export default function SkiaRenderer() {
           <SkImage 
             image={bushImg} 
             x={bushOffset} 
-            y={height - groundHeight - bushHeight} 
+            y={groundTop - bushHeight} 
             width={bushImgWidth} 
             height={bushHeight}
           />
           <SkImage 
             image={bushImg} 
             x={bushOffset + bushImgWidth - bushOverlap} 
-            y={height - groundHeight - bushHeight} 
+            y={groundTop - bushHeight} 
             width={bushImgWidth} 
             height={bushHeight}
           />
@@ -270,28 +263,30 @@ export default function SkiaRenderer() {
         <SkImage 
          image={pipeImg} 
          x={width * 0.2} 
-         y={height - pipeHeight - groundHeight + 25} 
+         y={groundTop - pipeHeight + 25} 
          width={width * 0.1} 
          height={pipeHeight} 
        />
        <SkImage 
         image={groundImg} 
         x={0} 
-        y={height - groundHeight} 
+        y={groundTop} 
         width={width} 
         height={groundHeight} 
       />
 
       {/* Ground shadow strip at the bottom */}
-      <Rect x={0} y={height - Math.min(24, groundHeight * 0.35)} width={width} height={Math.min(24, groundHeight * 0.35)}>
+      <Rect x={0} y={height - Math.min(24, groundThickness * 0.35)} width={width} height={Math.min(24, groundThickness * 0.35)}>
         <LinearGradient
-          start={{ x: 0, y: height - Math.min(24, groundHeight * 0.35) }}
+          start={{ x: 0, y: height - Math.min(24, groundThickness * 0.35) }}
           end={{ x: 0, y: height }}
           colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.18)"]}
           positions={[0, 1]}
         />
       </Rect>
-
+      {birdImg && (
+        <AnimatedBird width={width} height={height} groundHeight={groundHeight} birdImg={birdImg} bird={bird} />
+      )}
       {/* ...Pipes, Bird, HUD next */}
     </Canvas>
   );

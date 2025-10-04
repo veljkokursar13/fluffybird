@@ -309,10 +309,12 @@ export const overlayStyles = StyleSheet.create({
     backgroundColor: colors.overlay,
     justifyContent: 'center',
     alignItems: 'center',
+    width: screenWidth,
+    height: screenHeight,
   },
   
   modal: {
-    backgroundColor: backgroundGradient.bgGradientBottom,
+    
     borderRadius: borderRadius.xl,
     padding: spacing['3xl'],
     margin: spacing.xl,
@@ -321,11 +323,15 @@ export const overlayStyles = StyleSheet.create({
   },
   
   modalTitle: {
-    fontSize: typography.fontSize['3xl'],
+    fontSize: typography.fontSize['6xl'],
     fontWeight: '700',
-    color: colors.textSecondary,
-    textAlign: 'center',
+    color: colors.textPrimary,
+    textAlign: 'left',
     marginBottom: spacing.lg,
+    fontFamily: typography.fontFamily.primary,
+    
+    
+  
   },
   
   modalContent: {

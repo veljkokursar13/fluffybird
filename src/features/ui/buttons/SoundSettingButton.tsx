@@ -1,7 +1,7 @@
-import React from 'react';
-import { Pressable, ViewStyle } from 'react-native';
+
+import { Pressable, ViewStyle, StyleSheet } from 'react-native';
 import { Volume2, VolumeOff } from 'lucide-react-native';
-import { useSoundSetting } from '../../../hooks/useSoundSetting';
+import { useSoundControl } from '../../../hooks/useSoundControl';
 
 type SoundSettingButtonProps = {
   style?: ViewStyle;
@@ -10,13 +10,13 @@ type SoundSettingButtonProps = {
 };
 
 function SoundSettingButton({ style, size = 24, color = '#ffffff' }: SoundSettingButtonProps) {
-  const [muted, toggleMuted] = useSoundSetting();
+  const { muted, toggleMuted, accessibilityLabel } = useSoundControl();
 
   return (
     <Pressable
       onPress={toggleMuted}
-      accessibilityLabel="Toggle sound"
-      style={[{ position: 'absolute', top: 16, right: 16, padding: 8 }, style]}
+      accessibilityLabel={accessibilityLabel}
+      style={[SoundSettingButtonStyles.button]}
       hitSlop={8}
     >
       {muted ? <VolumeOff size={size} color={color} /> : <Volume2 size={size} color={color} />}
@@ -27,3 +27,13 @@ function SoundSettingButton({ style, size = 24, color = '#ffffff' }: SoundSettin
 export default SoundSettingButton;
 export { SoundSettingButton };
 
+const SoundSettingButtonStyles = StyleSheet.create({
+  button: {
+    position: 'absolute',
+    top: 24,
+    right: 16,
+    padding: 14,
+  
+ 
+  },
+});
