@@ -8,7 +8,8 @@ import { useGameStore } from "../../store/gameStore";
 import PipeSprite from "./PipeSprite";
 
 function AnimatedClouds({ width, height, groundHeight, elapsed }: { width: number; height: number; groundHeight: number; elapsed: number }) {
-  const cloudImg = useImage(require('@assets/images/cloud.png'));
+  const cloudImg = useImage(require('@assets/images/cloudnew.png'));
+  const cloudMediumImg = useImage(require('@assets/images/cloudmedium.png'));
   const [clouds, setClouds] = useState(() => {
     return [
       { x: Math.round(width * 0.1), y: Math.round(height * 0.14), scale: 0.18, speed: width * 0.012 },
@@ -19,14 +20,14 @@ function AnimatedClouds({ width, height, groundHeight, elapsed }: { width: numbe
   const lastRef = React.useRef<number>(elapsed);
 
   useEffect(() => {
-    if (!cloudImg) return;
+    if (!cloudImg || !cloudMediumImg) return;
     const dt = Math.max(0, elapsed - (lastRef.current ?? elapsed));
     lastRef.current = elapsed;
     if (!dt) return;
 
     setClouds((prev) => {
-      const imgW = cloudImg.width();
-      const imgH = cloudImg.height();
+      const imgW = cloudImg.width() || cloudMediumImg.width();
+      const imgH = cloudImg.height() || cloudMediumImg.height();
       if (!imgW || !imgH) return prev;
       const moved = prev.map((c) => ({ ...c, x: c.x - c.speed * dt }));
       const minGapPx = Math.round(width * 0.06);
@@ -59,9 +60,9 @@ function AnimatedClouds({ width, height, groundHeight, elapsed }: { width: numbe
     });
   }, [elapsed, cloudImg, width]);
 
-  if (!cloudImg) return null;
-  const imgW = cloudImg.width();
-  const imgH = cloudImg.height();
+  if (!cloudImg || !cloudMediumImg) return null;
+  const imgW = cloudImg.width() || cloudMediumImg.width();
+  const imgH = cloudImg.height() || cloudMediumImg.height();
   if (!imgW || !imgH) return null;
 
   return (
@@ -69,7 +70,7 @@ function AnimatedClouds({ width, height, groundHeight, elapsed }: { width: numbe
       {clouds.map((c, idx) => (
         <SkImage
           key={idx}
-          image={cloudImg}
+          image={cloudImg || cloudMediumImg}
           x={c.x}
           y={c.y}
           width={Math.round(imgW * c.scale)}
