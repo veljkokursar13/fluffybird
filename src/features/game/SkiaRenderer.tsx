@@ -78,13 +78,58 @@ function AnimatedSky({ width, height, groundHeight, sunImg, elapsed }: { width: 
   );
 }
 
+// Presentational pipe renderer: draws body + cap images only
+// Other files will control spawning, position, and sizing
+function pipeCreator(args: {
+  x: number;                 // left coordinate of the pipe
+  bottomY: number;           // y coordinate where the pipe touches the ground
+  bodyHeight: number;        // vertical stretch height of the pipe body
+  pipeWidth: number;         // rendered width of the pipe
+  bodyImg: ReturnType<typeof useImage>;
+  capImg: ReturnType<typeof useImage>;
+}) {
+  const { x, bottomY, bodyHeight, pipeWidth, bodyImg, capImg } = args;
+  if (!bodyImg || !capImg) return null;
+
+  // Scale cap to requested width, preserve its aspect ratio
+  const capScale = pipeWidth / capImg.width();
+  const capHeight = Math.round(capImg.height() * capScale);
+
+  // Body is stretched vertically to bodyHeight while keeping requested width
+  const bodyX = x;
+  const bodyY = bottomY - bodyHeight; // body grows upward from the ground
+
+  const capX = x;
+  const capY = bodyY - capHeight; // cap sits on top of the body
+
+  return (
+    <>
+      <SkImage
+        image={bodyImg}
+        x={bodyX}
+        y={bodyY}
+        width={pipeWidth}
+        height={bodyHeight}
+      />
+      <SkImage
+        image={capImg}
+        x={capX}
+        y={capY}
+        width={pipeWidth}
+        height={capHeight}
+      />
+    </>
+  );
+}
+
 export default function SkiaRenderer({ bird }: { bird: Bird }) {
   const { width, height } = useWindowDimensions();
   const groundImg = useImage(require('@assets/images/ground.png'));
   const sunImg = useImage(require('@assets/images/sun.png'));
   const cityBackgroundImg = useImage(require('@assets/images/citybgbackround.png'));
   const cityForegroundImg = useImage(require('@assets/images/citybg.png'));
-  const pipeImg = useImage(require('@assets/images/pipefull.png'));
+  const pipeBodyImg = useImage(require('@assets/images/pipebody.png'));
+  const pipeCapImg = useImage(require('@assets/images/pipecap.png'));
   const bushImg = useImage(require('@assets/images/bushes.png'));
   const birdImg = useImage(require('@assets/images/birdmain.png'));
 
@@ -109,10 +154,9 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
     return Math.round(cityForegroundImg.height() * (width / cityForegroundImg.width()));
   }, [cityForegroundImg, width]);
 
-  const pipeHeight = useMemo(() => {
-    if (!pipeImg) return 0;
-    return Math.round(pipeImg.height() * (width / pipeImg.width()) * 0.1); // Make pipe 10% of original size
-  }, [pipeImg, width]);
+  // Example dimensions for static demo rendering; size control lives elsewhere
+  const demoPipeWidth = useMemo(() => CONFIG.pipe.width, []);
+  const demoPipeBodyHeight = useMemo(() => CONFIG.pipe.height, []);
 
   const bushHeight = useMemo(() => {
     if (!bushImg) return 0;
@@ -260,13 +304,15 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
           />
         </>
       )}
-        <SkImage 
-         image={pipeImg} 
-         x={width * 0.2} 
-         y={groundTop - pipeHeight + 25} 
-         width={width * 0.1} 
-         height={pipeHeight} 
-       />
+      {/* Static example: render a single pipe using pipeCreator; movement/size are controlled elsewhere */}
+      {pipeBodyImg && pipeCapImg && pipeCreator({
+        x: Math.round(width * 0.2),
+        bottomY: groundTop,
+        bodyHeight: demoPipeBodyHeight,
+        pipeWidth: demoPipeWidth,
+        bodyImg: pipeBodyImg,
+        capImg: pipeCapImg,
+      })}
        <SkImage 
         image={groundImg} 
         x={0} 
