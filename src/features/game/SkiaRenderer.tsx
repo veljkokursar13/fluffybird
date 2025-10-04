@@ -332,6 +332,24 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
           />
         </>
       )}
+      {bushImg && (
+        <>
+          <SkImage 
+            image={bushImg} 
+            x={bushOffset} 
+            y={groundTop - bushHeight} 
+            width={bushImgWidth} 
+            height={bushHeight}
+          />
+          <SkImage 
+            image={bushImg} 
+            x={bushOffset + bushImgWidth - bushOverlap} 
+            y={groundTop - bushHeight} 
+            width={bushImgWidth} 
+            height={bushHeight}
+          />
+        </>
+      )}
       {/* Pipes should render above city/bushes, but below ground and bird */}
       <PipeSprite
         x={Math.round(width * 0.6)}
