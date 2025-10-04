@@ -11,9 +11,9 @@ function AnimatedClouds({ width, height, groundHeight, elapsed }: { width: numbe
   const cloudImg = useImage(require('@assets/images/cloud.png'));
   const [clouds, setClouds] = useState(() => {
     return [
-      { x: Math.round(width * 0.1), y: Math.round(height * 0.14), scale: 0.28, speed: width * 0.012 },
-      { x: Math.round(width * 0.55), y: Math.round(height * 0.10), scale: 0.22, speed: width * 0.015 },
-      { x: Math.round(width * 0.85), y: Math.round(height * 0.18), scale: 0.26, speed: width * 0.013 },
+      { x: Math.round(width * 0.1), y: Math.round(height * 0.14), scale: 0.18, speed: width * 0.012 },
+      { x: Math.round(width * 0.55), y: Math.round(height * 0.10), scale: 0.14, speed: width * 0.015 },
+      { x: Math.round(width * 0.85), y: Math.round(height * 0.18), scale: 0.16, speed: width * 0.013 },
     ];
   });
   const lastRef = React.useRef<number>(elapsed);
