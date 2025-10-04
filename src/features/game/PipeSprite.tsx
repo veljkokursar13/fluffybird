@@ -37,7 +37,10 @@ export default function PipeSprite({
   const capW = width + capOverhang * 2;
   const capH = capThickness;
   const capX = x - capOverhang;
-  const capY = orientation === "bottom" ? bodyY - capH : y + height;
+  // Place the cap at the top edge of the pipe body
+  // bottom: cap aligns with the body's top (at bodyY)
+  // top: cap aligns with the body's bottom (at y + height)
+  const capY = orientation === "bottom" ? bodyY : y + height;
 
   return (
     <Group>
