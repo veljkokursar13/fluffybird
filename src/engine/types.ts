@@ -5,11 +5,23 @@ export interface Bird {
   r: number;
 }
 
-export interface Pipe {
-  pos: { x: number; y: number };
-  size: { width: number; height: number };
-  speed: number;
-  gapY: number;  // Center of the gap between top and bottom pipe
+export type PipeRects = {
+body: { x: number; y: number; width: number; height: number };
+cap: { x: number; y: number; width: number; height: number };
+};
+
+export function PipeRects(
+  x: number,
+  width: number,
+  yTop: number,
+  topH: number,
+  yBottom: number,
+  bottomH: number
+): PipeRects {
+  return {
+    body: { x, y: yTop, width, height: topH },
+    cap: { x, y: yBottom, width, height: bottomH },
+  };
 }
 
 export type Config = {
