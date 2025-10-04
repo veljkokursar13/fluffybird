@@ -242,10 +242,9 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
     return Math.round(cityForegroundImg.height() * (width / cityForegroundImg.width()));
   }, [cityForegroundImg, width]);
 
-  const pipeHeight = useMemo(() => {
-    if (!pipeImg) return 0;
-    return Math.round(pipeImg.height() * (width / pipeImg.width()) * 0.1); // Make pipe 10% of original size
-  }, [pipeImg, width]);
+  // Example dimensions for static demo rendering; size control lives elsewhere
+  const demoPipeWidth = useMemo(() => CONFIG.pipe.width, []);
+  const demoPipeBodyHeight = useMemo(() => CONFIG.pipe.height, []);
 
   const bushHeight = useMemo(() => {
     if (!bushImg) return 0;
@@ -375,31 +374,15 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
           />
         </>
       )}
-      {bushImg && (
-        <>
-          <SkImage 
-            image={bushImg} 
-            x={bushOffset} 
-            y={groundTop - bushHeight} 
-            width={bushImgWidth} 
-            height={bushHeight}
-          />
-          <SkImage 
-            image={bushImg} 
-            x={bushOffset + bushImgWidth - bushOverlap} 
-            y={groundTop - bushHeight} 
-            width={bushImgWidth} 
-            height={bushHeight}
-          />
-        </>
-      )}
-        <SkImage 
-         image={pipeImg} 
-         x={width * 0.2} 
-         y={groundTop - pipeHeight + 25} 
-         width={width * 0.1} 
-         height={pipeHeight} 
-       />
+      {/* Static example: render a single pipe using pipeCreator; movement/size are controlled elsewhere */}
+      {pipeBodyImg && pipeCapImg && pipeCreator({
+        x: Math.round(width * 0.2),
+        bottomY: groundTop,
+        bodyHeight: demoPipeBodyHeight,
+        pipeWidth: demoPipeWidth,
+        bodyImg: pipeBodyImg,
+        capImg: pipeCapImg,
+      })}
        <SkImage 
         image={groundImg} 
         x={0} 
