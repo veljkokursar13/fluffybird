@@ -1,11 +1,84 @@
 import { Canvas, Rect, LinearGradient, useImage, Image as SkImage, RadialGradient } from "@shopify/react-native-skia";
 import { useWindowDimensions } from "react-native";
-import {useMemo, useEffect, useState, useCallback} from "react";
+import React, {useMemo, useEffect, useState, useCallback} from "react";
 import type { Bird } from "../../engine/types";
 import { CONFIG } from "../../engine/settings";
 import { useTicker } from "../../hooks/useTicker";
 import { useGameStore } from "../../store/gameStore";
 import PipeSprite from "./PipeSprite";
+
+function AnimatedClouds({ width, height, groundHeight, elapsed }: { width: number; height: number; groundHeight: number; elapsed: number }) {
+  const cloudImg = useImage(require('@assets/images/cloud.png'));
+  const [clouds, setClouds] = useState(() => {
+    return [
+      { x: Math.round(width * 0.1), y: Math.round(height * 0.14), scale: 0.28, speed: width * 0.012 },
+      { x: Math.round(width * 0.55), y: Math.round(height * 0.10), scale: 0.22, speed: width * 0.015 },
+      { x: Math.round(width * 0.85), y: Math.round(height * 0.18), scale: 0.26, speed: width * 0.013 },
+    ];
+  });
+  const lastRef = React.useRef<number>(elapsed);
+
+  useEffect(() => {
+    if (!cloudImg) return;
+    const dt = Math.max(0, elapsed - (lastRef.current ?? elapsed));
+    lastRef.current = elapsed;
+    if (!dt) return;
+
+    setClouds((prev) => {
+      const imgW = cloudImg.width();
+      const imgH = cloudImg.height();
+      if (!imgW || !imgH) return prev;
+      const moved = prev.map((c) => ({ ...c, x: c.x - c.speed * dt }));
+      const minGapPx = Math.round(width * 0.06);
+      // Wrap off-screen clouds to the right of the farthest cloud + gap
+      for (let i = 0; i < moved.length; i++) {
+        const c = moved[i];
+        const w = Math.round(imgW * c.scale);
+        if (c.x + w <= 0) {
+          let farthestRight = 0;
+          for (let j = 0; j < moved.length; j++) {
+            if (j === i) continue;
+            const cj = moved[j];
+            const wj = Math.round(imgW * cj.scale);
+            farthestRight = Math.max(farthestRight, cj.x + wj);
+          }
+          c.x = Math.max(farthestRight + minGapPx, width);
+        }
+      }
+      // Enforce non-overlap ordering by x
+      moved.sort((a, b) => a.x - b.x);
+      for (let i = 1; i < moved.length; i++) {
+        const p = moved[i - 1];
+        const c = moved[i];
+        const pw = Math.round(imgW * p.scale);
+        if (c.x < p.x + pw + minGapPx) {
+          c.x = p.x + pw + minGapPx;
+        }
+      }
+      return [...moved];
+    });
+  }, [elapsed, cloudImg, width]);
+
+  if (!cloudImg) return null;
+  const imgW = cloudImg.width();
+  const imgH = cloudImg.height();
+  if (!imgW || !imgH) return null;
+
+  return (
+    <>
+      {clouds.map((c, idx) => (
+        <SkImage
+          key={idx}
+          image={cloudImg}
+          x={c.x}
+          y={c.y}
+          width={Math.round(imgW * c.scale)}
+          height={Math.round(imgH * c.scale)}
+        />
+      ))}
+    </>
+  );
+}
 
 function AnimatedBird({
   width: _width,
@@ -178,6 +251,9 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
   const birdWingCenterUpperImg = useImage(require('@assets/images/wingcenterupper.png'));
   const birdWingCenterLowerImg = useImage(require('@assets/images/wingcenterlower.png'));
   const birdWingBottomImg = useImage(require('@assets/images/wingbottom.png'));
+  const cloudLargeImg = useImage(require('@assets/images/cloudnew.png'));
+  const cloudMediumImg = useImage(require('@assets/images/cloudmedium.png'));
+ 
 
 
   const groundTop = CONFIG.screen.floorY;
@@ -285,6 +361,8 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
   return (
     <Canvas style={{ width, height }} pointerEvents="none">
       <AnimatedSky width={width} height={height} groundHeight={groundThickness} sunImg={sunImg} elapsed={skyElapsed} />
+      {/* Clouds: render above sun sky gradients */}
+      <AnimatedClouds width={width} height={height} groundHeight={groundThickness} elapsed={skyElapsed} />
       
       {/* Subtle atmospheric haze above the city */}
       <Rect x={0} y={groundTop - Math.min(160, height * 0.2)} width={width} height={Math.min(160, height * 0.2)} blendMode="srcOver">
