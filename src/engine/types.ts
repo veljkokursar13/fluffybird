@@ -5,6 +5,13 @@ export interface Bird {
   r: number;
 }
 
+// Renderable pipe entity used across physics, spawning, and rendering
+export interface Pipe {
+  pos: { x: number; y: number }; // Anchor Y: top for "top" pipes, ground-top for "bottom" pipes
+  size: { width: number; height: number }; // Body dimensions (cap thickness handled by renderer)
+  orientation: "top" | "bottom";
+}
+
 export type PipeRects = {
 body: { x: number; y: number; width: number; height: number };
 cap: { x: number; y: number; width: number; height: number };
