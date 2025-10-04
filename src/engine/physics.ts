@@ -1,7 +1,8 @@
 import { Bird } from "./types";
 import { Pipe } from "./types";
 type collisionType = 'bird' | 'pipe' | 'ground';
-// All physics together - pure functions
+
+type wingPosition = "up"|"down";// All physics together - pure functions
 export function applyBirdPhysics(bird: Bird, gravity: number, dt: number) {
     bird.vel.y += gravity * dt;
     bird.pos.y += bird.vel.y * dt;
@@ -24,3 +25,16 @@ export function checkCollisions(bird: Bird, pipes: Pipe[], ground: number, sky: 
         return 'sky';
     }
  }
+function wingFlap(bird: Bird, onTap: (wingPosition: wingPosition) => void, tap: boolean) {
+       //on tap make bird flap its wings by changing the wing images
+       useEffect(() => {
+        onTap((wingPosition: wingPosition) => {
+            bird.wingPosition = wingPosition;
+            if(tap===true){
+                onTap('up');
+            }else{
+                onTap('down');
+            }
+        });
+       }, [bird.wingPosition]);
+}
