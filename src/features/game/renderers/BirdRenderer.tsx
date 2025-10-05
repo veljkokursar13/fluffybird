@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Canvas, Image as SkImage, useImage } from "@shopify/react-native-skia";
-import { useWindowDimensions } from "react-native";
+import { Image as SkImage, useImage } from "@shopify/react-native-skia";
 import type { Bird } from "../../../engine/types";
 import { useGameStore } from "../../../store/gameStore";
 
@@ -9,7 +8,6 @@ type BirdRendererProps = {
 };
 
 export default function BirdRenderer({ bird }: BirdRendererProps) {
-  const { width, height } = useWindowDimensions();
   const flapTick = useGameStore((s) => s.flapTick);
   const birdImg = useImage(require("@assets/images/birdmain.png"));
   const wingUpImg = useImage(require("@assets/images/wingup.png"));
@@ -67,17 +65,11 @@ export default function BirdRenderer({ bird }: BirdRendererProps) {
   const wingY = bird.pos.y - wingHeight * 0.1;
 
   return (
-    <Canvas style={{ width, height }} pointerEvents="none">
-      <SkImage
-        image={birdImg}
-        x={bird.pos.x - drawW / 2}
-        y={bird.pos.y - drawH / 2}
-        width={drawW}
-        height={drawH}
-      />
+    <>
+      <SkImage image={birdImg} x={bird.pos.x - drawW / 2} y={bird.pos.y - drawH / 2} width={drawW} height={drawH} />
       {chosenWingImg && (
         <SkImage image={chosenWingImg} x={wingX} y={wingY} width={wingWidth} height={wingHeight} />
       )}
-    </Canvas>
+    </>
   );
 }

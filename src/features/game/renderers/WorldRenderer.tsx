@@ -5,6 +5,7 @@ import type { Bird } from "../../../engine/types";
 import { CONFIG } from "../../../engine/settings";
 import { useTicker } from "../../../hooks/useTicker";
 import { useGameStore } from "../../../store/gameStore";
+import BirdRenderer from "./BirdRenderer";
  
 
 function AnimatedClouds({
@@ -454,7 +455,8 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
         />
       </Rect>
       
-      {/* Bird is rendered by BirdRenderer now */}
+      {/* Bird */}
+      <BirdRenderer bird={bird} />
       {/* ...Pipes, Bird, HUD next */}
     </Canvas>
   );
