@@ -468,7 +468,7 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
       {/* Pipes should render above city/bushes, but below ground and bird */}
       {pipecreator(
         Math.round(width * 0.6),
-        groundTop,
+        groundY,
         demoPipeWidth,
         demoPipeBodyHeight,
         'bottom'
