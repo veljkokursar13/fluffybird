@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, Pressable } from 'react-native';
 import { gameStyles, hudStyles } from '../../styles/styles';
-import WorldRenderer from './renderers/WorldRenderer';
+import { WorldRenderer } from './renderers/WorldRenderer';
 import { useGameStore } from '../../store/gameStore';
-import { Pause, Volume2, VolumeOff } from 'lucide-react-native';
+import { Pause,  } from 'lucide-react-native';
 // UI Overlays
 import GameOverOverlay from '../ui/overlays/GameOverOverlay';
 import PauseOverlay from '../ui/overlays/PauseOverlay';
