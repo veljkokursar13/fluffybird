@@ -1,4 +1,4 @@
-import { Canvas, Rect, LinearGradient, useImage, Image as SkImage } from "@shopify/react-native-skia";
+import { Canvas, Rect, LinearGradient, useImage, Image as SkImage, RadialGradient } from "@shopify/react-native-skia";
 import { useWindowDimensions } from "react-native";
 import React, {useMemo, useEffect, useState, useCallback} from "react";
 import type { Bird } from "../../../engine/types";
@@ -221,7 +221,7 @@ export default function WorldRenderer() {
  
 
 
-  const groundTop = CONFIG.screen.floorY;
+  const groundTop = CONFIG.screen.floorY - 20;
   const groundThickness = Math.max(0, height - groundTop);
   const groundHeight = useMemo(() => {
     if (!groundImg) return groundThickness;
@@ -258,7 +258,7 @@ export default function WorldRenderer() {
     return width * 0.03; // choose base so z=1 (bushes) => ~width * 0.015
   }, [width]);
 
-  const speedForDepth = (z: number) => baseSpeed * (1 / (1 + z));
+  const speedForDepth = (z: number) => baseSpeed * (1.1 / (1 + z));
 
   const bushSpeed = useMemo(() => {
     return speedForDepth(1); // bushes (near)
@@ -317,23 +317,39 @@ export default function WorldRenderer() {
     setSkyElapsed((e) => e + dt);
   });
 
-  // Always render sky/scene even if ground image isn't loaded yet
+  function AnimatedSun({ width, height, elapsed }: { width: number; height: number; elapsed: number }) {
+    const sunImg = useImage(require('@assets/images/sun.png'));
+    if (!sunImg) return null;
+    const sunW = width * 0.5;
+    const sunH = Math.round(sunImg.height() * (sunW / sunImg.width()));
+    const centerX = width * 0.5;
+    const baseY = height * 0.18;
+    const amplitude = Math.max(2, height * 0.02);
+    const centerY = baseY + amplitude * Math.sin((2 * Math.PI * elapsed) / 10);
+    const x = Math.round(centerX - sunW / 2);
+    const y = Math.round(centerY - sunH / 2);
+    return (
+      <>
+        <Rect x={0} y={0} width={width} height={height} blendMode="plus">
+          <RadialGradient
+            c={{ x: centerX, y: centerY }}
+            r={sunW * 0.9}
+            colors={["rgba(255,205,92,0.35)", "rgba(255,205,92,0.04)"]}
+            positions={[0, 1]}
+          />
+        </Rect>
+        <SkImage image={sunImg} x={x} y={y} width={sunW} height={sunH} />
+      </>
+    );
+  }
 
   return (
     <Canvas style={{ width, height }} pointerEvents="none">
       <AnimatedSky width={width} height={height} elapsed={skyElapsed} />
       {/* Clouds: render above sky gradient */}
       <AnimatedClouds width={width} height={height} groundHeight={groundThickness} elapsed={skyElapsed} />
-      
-      {/* Subtle atmospheric haze above the city */}
-      <Rect x={0} y={groundTop - Math.min(160, height * 0.2)} width={width} height={Math.min(160, height * 0.2)} blendMode="srcOver">
-        <LinearGradient
-          start={{ x: 0, y: groundTop - Math.min(160, height * 0.2) }}
-          end={{ x: 0, y: groundTop }}
-          colors={["rgba(255,140,105,0.08)", "rgba(255,140,105,0)"]}
-          positions={[0, 1]}
-        />
-      </Rect>
+      <AnimatedSun width={width} height={height} elapsed={skyElapsed}  />
+
 
       {cityBackgroundImg ? (
         <>
