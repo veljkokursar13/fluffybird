@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, Pressable } from 'react-native';
 import { gameStyles, hudStyles } from '../../styles/styles';
-import SkiaRenderer from './SkiaRenderer';
+import WorldRenderer from './renderers/WorldRenderer';
+import BirdRenderer from './renderers/BirdRenderer';
 import { useGameStore } from '../../store/gameStore';
 import useSound from '../../hooks/useSound';
 import { useSoundControl } from '../../hooks/useSoundControl';
@@ -129,8 +130,10 @@ export default function GameContainer() {
   };
   return (
     <View style={gameStyles.gameArea}>
-      {/* Skia Renderer with background shader */}
-      <SkiaRenderer bird={bird} />
+      {/* World (background) */}
+      <WorldRenderer bird={bird} />
+      {/* Bird */}
+      <BirdRenderer bird={bird} />
 
       {/* Full-screen tap layer (does not cover HUD/overlays visually) */}
       <Pressable onPress={handleTap} style={StyleSheet.absoluteFill} />
