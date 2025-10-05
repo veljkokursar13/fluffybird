@@ -25,9 +25,9 @@ export default function GameContainer() {
   const { muted, toggleMuted } = useSoundControl();
 
   // Menu/overlay soundtrack (controlled by mute, auto-off when playing)
-  const menuAudio = useSound(fluffySoundtrack, { autoplay: true, loop: true, volume: 0.6, mute: muted });
+  const menuAudio = useSound(fluffySoundtrack, { autoplay: false, loop: true, volume: 0.6, mute: muted });
   // Gameplay sound (always on during playing, not affected by mute)
-  const gameplayAudio = useSound(gamePlaySound, { autoplay: true, loop: true, volume: 0.6, mute: false });
+  const gameplayAudio = useSound(gamePlaySound, { autoplay: false, loop: true, volume: 0.6, mute: false });
   // Initialize game loop - TEMPORARILY DISABLED FOR TESTING
   // useGameLoop();
 
