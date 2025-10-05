@@ -26,7 +26,7 @@ export default function useSound(source: AudioSource, options: UseSoundOptions =
         player.loop = !!loop
         player.muted = !!mute
         if (autoplay) {
-          player.play()
+          await player.play()
         }
       } catch {}
     })()

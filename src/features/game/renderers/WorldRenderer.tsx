@@ -320,10 +320,10 @@ export default function WorldRenderer() {
   function AnimatedSun({ width, height, elapsed }: { width: number; height: number; elapsed: number }) {
     const sunImg = useImage(require('@assets/images/sun.png'));
     if (!sunImg) return null;
-    const sunW = width * 0.5;
+    const sunW = width * 0.35;
     const sunH = Math.round(sunImg.height() * (sunW / sunImg.width()));
     const centerX = width * 0.5;
-    const baseY = height * 0.18;
+    const baseY = height * 0.12;
     const amplitude = Math.max(2, height * 0.02);
     const centerY = baseY + amplitude * Math.sin((2 * Math.PI * elapsed) / 10);
     const x = Math.round(centerX - sunW / 2);
@@ -333,8 +333,8 @@ export default function WorldRenderer() {
         <Rect x={0} y={0} width={width} height={height} blendMode="plus">
           <RadialGradient
             c={{ x: centerX, y: centerY }}
-            r={sunW * 0.9}
-            colors={["rgba(255,205,92,0.35)", "rgba(255,205,92,0.04)"]}
+            r={sunW * 1.1}
+            colors={["rgba(255,205,92,0.28)", "rgba(255,205,92,0.02)"]}
             positions={[0, 1]}
           />
         </Rect>
