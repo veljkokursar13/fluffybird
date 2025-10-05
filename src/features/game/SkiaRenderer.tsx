@@ -273,6 +273,7 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
     if (!groundImg) return groundThickness;
     return Math.round(groundImg.height() * (width / groundImg.width()));
   }, [groundImg, width]);
+  const groundY = height - groundHeight; // actual top Y where ground image is drawn
 
   // Central sky time driven by centralized ticker
   const [skyElapsed, setSkyElapsed] = useState(0);
@@ -401,10 +402,10 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
       <AnimatedClouds width={width} height={height} groundHeight={groundThickness} elapsed={skyElapsed} />
       
       {/* Subtle atmospheric haze above the city */}
-      <Rect x={0} y={groundTop - Math.min(160, height * 0.2)} width={width} height={Math.min(160, height * 0.2)} blendMode="srcOver">
+      <Rect x={0} y={groundY - Math.min(160, height * 0.2)} width={width} height={Math.min(160, height * 0.2)} blendMode="srcOver">
         <LinearGradient
-          start={{ x: 0, y: groundTop - Math.min(160, height * 0.2) }}
-          end={{ x: 0, y: groundTop }}
+          start={{ x: 0, y: groundY - Math.min(160, height * 0.2) }}
+          end={{ x: 0, y: groundY }}
           colors={["rgba(255,140,105,0.08)", "rgba(255,140,105,0)"]}
           positions={[0, 1]}
         />
@@ -415,14 +416,14 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
           <SkImage 
             image={cityBackgroundImg} 
             x={cityBgOffset} 
-            y={groundTop - cityBackgroundHeight }
+            y={groundY - cityBackgroundHeight }
             width={width} 
             height={cityBackgroundHeight} 
           />
           <SkImage 
             image={cityBackgroundImg} 
             x={cityBgOffset + width} 
-            y={groundTop - cityBackgroundHeight } 
+            y={groundY - cityBackgroundHeight } 
             width={width} 
             height={cityBackgroundHeight} 
           />
@@ -433,14 +434,14 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
           <SkImage 
             image={cityForegroundImg} 
             x={cityFgOffset} 
-            y={groundTop - cityForegroundHeight}
+            y={groundY - cityForegroundHeight}
             width={width} 
             height={cityForegroundHeight} 
           />
           <SkImage 
             image={cityForegroundImg} 
             x={cityFgOffset + width} 
-            y={groundTop - cityForegroundHeight}
+            y={groundY - cityForegroundHeight}
             width={width} 
             height={cityForegroundHeight} 
           />
@@ -451,14 +452,14 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
           <SkImage 
             image={bushImg} 
             x={bushOffset} 
-            y={groundTop - bushHeight} 
+            y={groundY - bushHeight} 
             width={bushImgWidth} 
             height={bushHeight}
           />
           <SkImage 
             image={bushImg} 
             x={bushOffset + bushImgWidth - bushOverlap} 
-            y={groundTop - bushHeight} 
+            y={groundY - bushHeight} 
             width={bushImgWidth} 
             height={bushHeight}
           />
