@@ -3,10 +3,6 @@ import { View, StyleSheet, TouchableOpacity, Text, Pressable } from 'react-nativ
 import { gameStyles, hudStyles } from '../../styles/styles';
 import WorldRenderer from './renderers/WorldRenderer';
 import { useGameStore } from '../../store/gameStore';
-import useSound from '../../hooks/useSound';
-import { useSoundControl } from '../../hooks/useSoundControl';
-import gamePlaySound from '@assets/audio/gameplaysound.mp3';
-import fluffySoundtrack from '@assets/audio/fluffy-soundtrack.wav';
 import { Pause, Volume2, VolumeOff } from 'lucide-react-native';
 // UI Overlays
 import GameOverOverlay from '../ui/overlays/GameOverOverlay';
@@ -23,13 +19,10 @@ export default function GameContainer() {
   const jump = useGameStore((state) => state.jump);
   const updateBird = useGameStore((state) => state.updateBird);
   const setGameState = useGameStore((state) => state.setGameState);
-  const { muted, toggleMuted } = useSoundControl();
+
 
   // Menu/overlay soundtrack (controlled by mute, auto-off when playing)
-  const menuAudio = useSound(fluffySoundtrack, { autoplay: false, loop: true, volume: 0.6, mute: muted });
-  // Gameplay sound (always on during playing, not affected by mute)
-  const gameplayAudio = useSound(gamePlaySound, { autoplay: false, loop: true, volume: 0.6, mute: false });
-  // Initialize game loop - TEMPORARILY DISABLED FOR TESTING
+ 
   // useGameLoop();
 
   // Ensure HUD/icons render by starting gameplay from menu
@@ -40,38 +33,7 @@ export default function GameContainer() {
   }, [gameState, setGameState]);
 
   // Control menu soundtrack by state + mute
-  useEffect(() => {
-    if (!menuAudio) return;
-    (async () => {
-      try {
-        if (gameState === 'playing') {
-          menuAudio?.pause?.();
-          await menuAudio?.seekTo?.(0);
-        } else {
-          if (muted) {
-            menuAudio?.pause?.();
-          } else {
-            menuAudio?.play?.();
-          }
-        }
-      } catch {}
-    })();
-  }, [gameState, muted, menuAudio]);
-
-  // Control gameplay sound by state only (ignore mute)
-  useEffect(() => {
-    if (!gameplayAudio) return;
-    (async () => {
-      try {
-        if (gameState === 'playing') {
-          gameplayAudio?.play?.();
-        } else {
-          gameplayAudio?.pause?.();
-          await gameplayAudio?.seekTo?.(0);
-        }
-      } catch {}
-    })();
-  }, [gameState, gameplayAudio]);
+  
 
   // (removed) pre-tap physics loop; physics starts only after first tap
 
@@ -120,9 +82,6 @@ export default function GameContainer() {
       // Restart handled by GameOverOverlay buttons
     }
   };
-  const handleToggleMute = () => {
-    toggleMuted();
-  };
 
   const handlePause = () => {
     setGameState('paused');
@@ -140,13 +99,7 @@ export default function GameContainer() {
         <View style={hudStyles.hud}>
           <ScoreDisplay />
           <View style={gameStyles.iconRow}>
-            <TouchableOpacity onPress={handleToggleMute} accessibilityLabel="Toggle sound">
-              {muted ? (
-                <VolumeOff size={24} color="#ffffff" />
-              ) : (
-                <Volume2 size={24} color="#ffffff" />
-              )}
-            </TouchableOpacity>
+            {/* here will be placed icons once we put the sound settings in the game */}
             <TouchableOpacity onPress={handlePause} accessibilityLabel="Pause game" style={gameStyles.iconRight}>
               <Pause size={24} color="#ffffff" />
             </TouchableOpacity>
