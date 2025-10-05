@@ -348,9 +348,6 @@ export default function WorldRenderer() {
       <AnimatedSky width={width} height={height} elapsed={skyElapsed} />
       {/* Clouds: render above sky gradient */}
       <AnimatedClouds width={width} height={height} groundHeight={groundThickness} elapsed={skyElapsed} />
-      <AnimatedSun width={width} height={height} elapsed={skyElapsed}  />
-
-
       {cityBackgroundImg ? (
         <>
           <SkImage 
@@ -387,6 +384,8 @@ export default function WorldRenderer() {
           />
         </>
       ) : null}
+      {/* Sun above city layers to ensure visibility */}
+      <AnimatedSun width={width} height={height} elapsed={skyElapsed} />
       {bushImg ? (
         <>
           <SkImage 
