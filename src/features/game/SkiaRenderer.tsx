@@ -472,10 +472,10 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
         demoPipeBodyHeight,
         'bottom'
       )}
-       <SkImage 
+      <SkImage 
         image={groundImg} 
         x={0} 
-        y={groundTop} 
+        y={height - groundHeight} 
         width={width} 
         height={groundHeight} 
       />
