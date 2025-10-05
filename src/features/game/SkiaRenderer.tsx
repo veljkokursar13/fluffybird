@@ -7,79 +7,87 @@ import { useTicker } from "../../hooks/useTicker";
 import { useGameStore } from "../../store/gameStore";
  
 
-function AnimatedClouds({ width, height, groundHeight, elapsed }: { width: number; height: number; groundHeight: number; elapsed: number }) {
-  const cloudImg = useImage(require('@assets/images/cloudnew.png'));
-  const cloudMediumImg = useImage(require('@assets/images/cloudmedium.png'));
-  const [clouds, setClouds] = useState(() => {
-    return [
-      { x: Math.round(width * 0.1), y: Math.round(height * 0.14), scale: 0.18, speed: width * 0.012 },
-      { x: Math.round(width * 0.55), y: Math.round(height * 0.10), scale: 0.14, speed: width * 0.015 },
-      { x: Math.round(width * 0.85), y: Math.round(height * 0.18), scale: 0.16, speed: width * 0.013 },
-    ];
-  });
+function AnimatedClouds({
+  width, height, groundHeight, elapsed,
+}: { width: number; height: number; groundHeight: number; elapsed: number }) {
+  const cloudLarge = useImage(require('@assets/images/cloudnew.png'));
+  const cloudMedium = useImage(require('@assets/images/cloudmedium.png'));
+
+  // choose which sprite each cloud uses so both assets appear
+  const [clouds, setClouds] = useState(() => ([
+    { x: Math.round(width * 0.10), y: Math.round(height * 0.14), scale: 0.18, speed: width * 0.012, kind: "large" as const },
+    { x: Math.round(width * 0.55), y: Math.round(height * 0.10), scale: 0.14, speed: width * 0.015, kind: "medium" as const },
+    { x: Math.round(width * 0.85), y: Math.round(height * 0.18), scale: 0.16, speed: width * 0.013, kind: "large" as const },
+  ]));
+
   const lastRef = React.useRef<number>(elapsed);
 
   useEffect(() => {
-    if (!cloudImg || !cloudMediumImg) return;
+    if (!cloudLarge && !cloudMedium) return;
     const dt = Math.max(0, elapsed - (lastRef.current ?? elapsed));
     lastRef.current = elapsed;
     if (!dt) return;
 
-    setClouds((prev) => {
-      const imgW = cloudImg.width() || cloudMediumImg.width();
-      const imgH = cloudImg.height() || cloudMediumImg.height();
-      if (!imgW || !imgH) return prev;
-      const moved = prev.map((c) => ({ ...c, x: c.x - c.speed * dt }));
+    setClouds(prev => {
+      const moved = prev.map(c => ({ ...c, x: c.x - c.speed * dt }));
+
+      // wrap and spacing using each cloud’s own sprite size
       const minGapPx = Math.round(width * 0.06);
-      // Wrap off-screen clouds to the right of the farthest cloud + gap
+
+      const getSize = (c: typeof prev[number]) => {
+        const img = c.kind === "large" ? cloudLarge : cloudMedium;
+        if (!img) return { w: 0, h: 0 };
+        const w = Math.round(img.width() * c.scale);
+        const h = Math.round(img.height() * c.scale);
+        return { w, h };
+      };
+
+      // wrap off-screen
       for (let i = 0; i < moved.length; i++) {
         const c = moved[i];
-        const w = Math.round(imgW * c.scale);
-        if (c.x + w <= 0) {
-          let farthestRight = 0;
+        const { w } = getSize(c);
+        if (w && c.x + w <= 0) {
+          let farRight = 0;
           for (let j = 0; j < moved.length; j++) {
             if (j === i) continue;
             const cj = moved[j];
-            const wj = Math.round(imgW * cj.scale);
-            farthestRight = Math.max(farthestRight, cj.x + wj);
+            const { w: wj } = getSize(cj);
+            farRight = Math.max(farRight, cj.x + wj);
           }
-          c.x = Math.max(farthestRight + minGapPx, width);
+          c.x = Math.max(farRight + minGapPx, width);
         }
       }
-      // Enforce non-overlap ordering by x
+
+      // keep simple non-overlap order
       moved.sort((a, b) => a.x - b.x);
       for (let i = 1; i < moved.length; i++) {
         const p = moved[i - 1];
         const c = moved[i];
-        const pw = Math.round(imgW * p.scale);
+        const { w: pw } = getSize(p);
         if (c.x < p.x + pw + minGapPx) {
           c.x = p.x + pw + minGapPx;
         }
       }
+
       return [...moved];
     });
-  }, [elapsed, cloudImg, width]);
+  }, [elapsed, cloudLarge, cloudMedium, width]);
 
-  if (!cloudImg || !cloudMediumImg) return null;
-  const imgW = cloudImg.width() || cloudMediumImg.width();
-  const imgH = cloudImg.height() || cloudMediumImg.height();
-  if (!imgW || !imgH) return null;
+  if (!cloudLarge && !cloudMedium) return null;
 
   return (
     <>
-      {clouds.map((c, idx) => (
-        <SkImage
-          key={idx}
-          image={cloudImg || cloudMediumImg}
-          x={c.x}
-          y={c.y}
-          width={Math.round(imgW * c.scale)}
-          height={Math.round(imgH * c.scale)}
-        />
-      ))}
+      {clouds.map((c, idx) => {
+        const img = c.kind === "large" ? cloudLarge : cloudMedium;
+        if (!img) return null;
+        const w = Math.round(img.width() * c.scale);
+        const h = Math.round(img.height() * c.scale);
+        return <SkImage key={idx} image={img} x={c.x} y={c.y} width={w} height={h} />;
+      })}
     </>
   );
 }
+
 
 function AnimatedBird({
   width: _width,

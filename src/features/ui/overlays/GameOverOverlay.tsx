@@ -3,7 +3,6 @@ import { useGameStore } from '../../../store/gameStore';
 import PlayButton from '../buttons/PlayButton';
 import RestartButton from '../buttons/RestartButton';
 import { BlurView } from 'expo-blur';
-import ScoreDisplay from '../common/ScoreDisplay';
 import BestScoreDisplay from '../common/BestScoreDisplay';
 import { overlayStyles } from '../../../styles/styles';
 import SoundSettingButton from '../buttons/SoundSettingButton';
