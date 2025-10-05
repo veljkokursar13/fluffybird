@@ -1,9 +1,8 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, Pressable } from 'react-native';
 import { gameStyles, hudStyles } from '../../styles/styles';
 import SkiaRenderer from './SkiaRenderer';
 import { useGameStore } from '../../store/gameStore';
-import { useGameLoop } from '../../hooks/useGameLoop';
 import useSound from '../../hooks/useSound';
 import { useSoundControl } from '../../hooks/useSoundControl';
 import gamePlaySound from '@assets/audio/gameplaysound.mp3';
@@ -98,7 +97,16 @@ export default function GameContainer() {
 
     const groundY = CONFIG.screen.floorY;
     const skyY = 0;
-    const hit = checkCollisions(stepped, pipes, groundY, skyY);
+    const pipeRects = pipes.map((p) => ({
+      body: {
+        x: p.pos.x,
+        y: p.orientation === 'bottom' ? p.pos.y - p.size.height : p.pos.y,
+        width: p.size.width,
+        height: p.size.height,
+      },
+      cap: { x: 0, y: 0, width: 0, height: 0 },
+    }));
+    const hit = checkCollisions(stepped, pipeRects, groundY, skyY);
     if (hit === 'ground') {
       stepped.pos.y = groundY - stepped.r;
       stepped.vel.y = 0;
