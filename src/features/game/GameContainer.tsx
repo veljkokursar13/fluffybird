@@ -13,13 +13,12 @@ import GameOverOverlay from '../ui/overlays/GameOverOverlay';
 import PauseOverlay from '../ui/overlays/PauseOverlay';
 import ScoreDisplay from '../ui/common/ScoreDisplay';
 import { applyBirdPhysics, checkCollisions } from '../../engine/physics';
-import { CONFIG } from '../../engine/settings';
 import type { Bird } from '../../engine/types';
+import { CONFIG } from '../../engine/settings';
 import { useTicker } from '../../hooks/useTicker';
 
 export default function GameContainer() {
   const gameState = useGameStore((state) => state.gameState);
-  const bird = useGameStore((state) => state.bird);
   const jump = useGameStore((state) => state.jump);
   const updateBird = useGameStore((state) => state.updateBird);
   const setGameState = useGameStore((state) => state.setGameState);
@@ -130,7 +129,7 @@ export default function GameContainer() {
   return (
     <View style={gameStyles.gameArea}>
       {/* World (background) + Bird (inside Canvas) */}
-      <WorldRenderer bird={bird} />
+      <WorldRenderer />
 
       {/* Full-screen tap layer (does not cover HUD/overlays visually) */}
       <Pressable onPress={handleTap} style={StyleSheet.absoluteFill} />
