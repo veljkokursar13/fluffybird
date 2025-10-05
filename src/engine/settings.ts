@@ -5,7 +5,7 @@ import type { Config } from './types';
 const { width, height } = Dimensions.get('window');
 
 export const CONFIG: Readonly<Config> = {
-  screen: { width, height, floorY: height - 80 },
+  screen: { width, height, floorY: height - 100 },
   bird: {
     size: 48,
     startX: Math.round(width * 0.25),

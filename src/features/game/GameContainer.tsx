@@ -87,7 +87,7 @@ export default function GameContainer() {
   const tickPhysics = useCallback((dt: number) => {
     if (!hasStarted || gameState !== 'playing') return;
     const current: Bird = useGameStore.getState().bird as Bird;
-    const pipes = useGameStore.getState().pipes;
+
     const stepped: Bird = {
       pos: { ...current.pos },
       vel: { ...current.vel },
@@ -97,16 +97,7 @@ export default function GameContainer() {
 
     const groundY = CONFIG.screen.floorY;
     const skyY = 0;
-    const pipeRects = pipes.map((p) => ({
-      body: {
-        x: p.pos.x,
-        y: p.orientation === 'bottom' ? p.pos.y - p.size.height : p.pos.y,
-        width: p.size.width,
-        height: p.size.height,
-      },
-      cap: { x: 0, y: 0, width: 0, height: 0 },
-    }));
-    const hit = checkCollisions(stepped, pipeRects, groundY, skyY);
+    const hit = checkCollisions(stepped, [], groundY, skyY);
     if (hit === 'ground') {
       stepped.pos.y = groundY - stepped.r;
       stepped.vel.y = 0;
@@ -114,10 +105,7 @@ export default function GameContainer() {
       setGameState('gameOver');
       return;
     }
-    if (hit === 'pipe') {
-      setGameState('gameOver');
-      return;
-    }
+    
 
     updateBird({ pos: stepped.pos, vel: stepped.vel });
   }, [hasStarted, gameState, updateBird, setGameState]);

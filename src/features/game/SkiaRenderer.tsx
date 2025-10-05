@@ -262,8 +262,7 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
   const birdWingBottomImg = useImage(require('@assets/images/wingbottom.png'));
   const cloudLargeImg = useImage(require('@assets/images/cloudnew.png'));
   const cloudMediumImg = useImage(require('@assets/images/cloudmedium.png'));
-  const pipeBodyImg = useImage(require('@assets/images/pipebody.png'));
-  const pipeCapImg = useImage(require('@assets/images/pipecap.png'));
+  
  
 
 
@@ -289,10 +288,7 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
     return Math.round(cityForegroundImg.height() * (width / cityForegroundImg.width()));
   }, [cityForegroundImg, width]);
 
-  // Demo pipe dimensions; spawning/positioning controlled elsewhere
-  const demoPipeWidth = useMemo(() => CONFIG.pipe.width, []);
-  const demoPipeBodyHeight = useMemo(() => CONFIG.pipe.height, []);
-
+  // (pipes removed)
   const bushHeight = useMemo(() => {
     if (!bushImg) return 0;
     return Math.round(bushImg.height() * (width / bushImg.width()));
@@ -366,33 +362,6 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
     setSkyElapsed((e) => e + dt);
   });
 
-  // Pipe-only renderer: draws body then cap (cap on top of body)
-  const pipecreator = (
-    x: number,
-    y: number,
-    widthPx: number,
-    heightPx: number,
-    orientation: 'top' | 'bottom'
-  ) => {
-    if (!pipeBodyImg || !pipeCapImg) return null;
-    const bodyX = x;
-    const bodyY = orientation === 'bottom' ? y - heightPx : y;
-    const bodyW = widthPx;
-    const bodyH = heightPx;
-
-    // Cap scaled to same width; height from image aspect ratio
-    const capW = widthPx;
-    const capH = Math.round(pipeCapImg.height() * (capW / pipeCapImg.width()));
-    const capX = x;
-    const capY = orientation === 'bottom' ? bodyY - capH : y + heightPx;
-
-    return (
-      <>
-        <SkImage image={pipeBodyImg} x={bodyX} y={bodyY} width={bodyW} height={bodyH} />
-        <SkImage image={pipeCapImg} x={capX} y={capY} width={capW} height={capH} />
-      </>
-    );
-  };
   
   if(!groundImg) return null;
 
@@ -466,14 +435,7 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
           />
         </>
       )}
-      {/* Pipes should render above city/bushes, but below ground and bird */}
-      {pipecreator(
-        Math.round(width * 0.6),
-        groundTop,
-        demoPipeWidth,
-        demoPipeBodyHeight,
-        'bottom'
-      )}
+      
       <SkImage 
         image={groundImg} 
         x={0} 
