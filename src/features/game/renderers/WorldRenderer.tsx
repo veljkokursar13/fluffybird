@@ -1,11 +1,10 @@
-import { Canvas, Rect, LinearGradient, useImage, Image as SkImage, RadialGradient } from "@shopify/react-native-skia";
+import { Canvas, Rect, LinearGradient, useImage, Image as SkImage } from "@shopify/react-native-skia";
 import { useWindowDimensions } from "react-native";
 import React, {useMemo, useEffect, useState, useCallback} from "react";
 import type { Bird } from "../../../engine/types";
 import { CONFIG } from "../../../engine/settings";
 import { useTicker } from "../../../hooks/useTicker";
-import { useGameStore } from "../../../store/gameStore";
-import BirdRenderer from "./BirdRenderer";
+
  
 
 function AnimatedClouds({
@@ -191,76 +190,31 @@ function AnimatedBird({
   );
 }
 
-function AnimatedSky({ width, height, groundHeight, sunImg, elapsed }: { width: number; height: number; groundHeight: number; sunImg: ReturnType<typeof useImage>; elapsed: number }) {
-
+function AnimatedSky({ width, height, elapsed }: { width: number; height: number; elapsed: number }) {
   const start = { x: 0, y: 0 } as const;
-  const end = { x: 0, y: height + height * 0.02 * Math.sin((2 * Math.PI * elapsed) / 30) } as const;
-  const sunRadius = height * (0.18 + 0.05 * Math.sin((2 * Math.PI * elapsed) / 10));
-  const sunCenter = {
-    x: width * 0.5,
-    y: height - groundHeight - height * 0.05
-  } as const;
   const skyShift = 0.02 * Math.sin((2 * Math.PI * elapsed) / 30);
-
+  const end = { x: 0, y: height } as const;
   return (
-    <>
-      <Rect x={0} y={0} width={width} height={height}>
-        <LinearGradient
-          start={start}
-          end={end}
-          colors={["#3a1c71", "#ff5f6d", "#ffc371", "#fffacd"]}
-          positions={[0, Math.min(0.48, 0.33 + skyShift * 0.3), Math.min(0.8, 0.66 + skyShift * 0.6), 1]}
-        />
-      </Rect>
-      <Rect x={0} y={0} width={width} height={height} blendMode="plus">
-        <RadialGradient
-          c={sunCenter}
-          r={height * 0.28}
-          colors={["rgba(255,205,92,0.18)", "rgba(255,205,92,0.015)"]}
-          positions={[0, 1]}
-        />
-      </Rect>
-      <Rect x={0} y={0} width={width} height={height} blendMode="plus">
-        <RadialGradient
-          c={sunCenter}
-          r={sunRadius}
-          colors={["rgba(255,205,92,0.45)", "rgba(255,205,92,0.05)"]}
-          positions={[0, 1]}
-        />
-      </Rect>
-      {sunImg && (() => {
-        const sunW = width * 0.6;
-        const sunH = Math.round(sunImg.height() * (sunW / sunImg.width()));
-        return (
-          <SkImage
-            image={sunImg}
-            x={sunCenter.x - sunW / 2}
-            y={sunCenter.y - sunH / 2}
-            width={sunW}
-            height={sunH}
-          />
-        );
-      })()}
-    </>
+    <Rect x={0} y={0} width={width} height={height}>
+      <LinearGradient
+        start={start}
+        end={end}
+        colors={["#3a1c71", "#ff5f6d", "#ffc371", "#fffacd"]}
+        positions={[0, Math.min(0.48, 0.33 + skyShift * 0.3), Math.min(0.8, 0.66 + skyShift * 0.6), 1]}
+      />
+    </Rect>
   );
 }
 
-// (Removed pipe rendering from this file)
 
-export default function SkiaRenderer({ bird }: { bird: Bird }) {
+export default function WorldRenderer() {
   const { width, height } = useWindowDimensions();
-  const flapTick = useGameStore((s) => s.flapTick);
+ 
   const groundImg = useImage(require('@assets/images/ground.png'));
-  const sunImg = useImage(require('@assets/images/sun.png'));
   const cityBackgroundImg = useImage(require('@assets/images/citybgbackround.png'));
   const cityForegroundImg = useImage(require('@assets/images/citybg.png'));
   // (pipe images moved out of this renderer)
   const bushImg = useImage(require('@assets/images/bushes.png'));
-  const birdImg = useImage(require('@assets/images/birdmain.png'));
-  const birdWingUpImg = useImage(require('@assets/images/wingup.png'));
-  const birdWingCenterUpperImg = useImage(require('@assets/images/wingcenterupper.png'));
-  const birdWingCenterLowerImg = useImage(require('@assets/images/wingcenterlower.png'));
-  const birdWingBottomImg = useImage(require('@assets/images/wingbottom.png'));
   const cloudLargeImg = useImage(require('@assets/images/cloudnew.png'));
   const cloudMediumImg = useImage(require('@assets/images/cloudmedium.png'));
   
@@ -368,8 +322,8 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
 
   return (
     <Canvas style={{ width, height }} pointerEvents="none">
-      <AnimatedSky width={width} height={height} groundHeight={groundThickness} sunImg={sunImg} elapsed={skyElapsed} />
-      {/* Clouds: render above sun sky gradients */}
+      <AnimatedSky width={width} height={height} elapsed={skyElapsed} />
+      {/* Clouds: render above sky gradient */}
       <AnimatedClouds width={width} height={height} groundHeight={groundThickness} elapsed={skyElapsed} />
       
       {/* Subtle atmospheric haze above the city */}
@@ -456,8 +410,7 @@ export default function SkiaRenderer({ bird }: { bird: Bird }) {
       </Rect>
       
       {/* Bird */}
-      <BirdRenderer bird={bird} />
-      {/* ...Pipes, Bird, HUD next */}
+    
     </Canvas>
   );
 }
