@@ -16,7 +16,7 @@ import { applyBirdPhysics, checkCollisions } from '../../engine/physics';
 import type { Bird } from '../../engine/types';
 import { CONFIG } from '../../engine/settings';
 import { useTicker } from '../../hooks/useTicker';
-import { loadSoundsOnce, unloadSounds } from '../../utils/soundManager';
+
 
 export default function GameContainer() {
   const gameState = useGameStore((state) => state.gameState);
@@ -31,14 +31,6 @@ export default function GameContainer() {
   const gameplayAudio = useSound(gamePlaySound, { autoplay: false, loop: true, volume: 0.6, mute: false });
   // Initialize game loop - TEMPORARILY DISABLED FOR TESTING
   // useGameLoop();
-
-  // Load sounds once on mount
-  useEffect(() => {
-    loadSoundsOnce();
-    return () => {
-      unloadSounds();
-    };
-  }, []);
 
   // Ensure HUD/icons render by starting gameplay from menu
   useEffect(() => {

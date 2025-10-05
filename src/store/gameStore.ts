@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { CONFIG } from '../engine/settings';
 import type { Bird, Pipe } from '../engine/types';
 import { router } from 'expo-router';
-import { playFlap } from '../utils/soundManager';
+
 
 export type GameState = 'menu' | 'playing' | 'paused' | 'gameOver';
 
@@ -79,14 +79,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
   
   updatePipes: (pipes) => set({ pipes }),
   
-  jump: () => set((state) => {
-    playFlap(); // Play flap sound
-    return {
-      bird: {
-        ...state.bird,
-        vel: { ...state.bird.vel, y: CONFIG.physics.jumpVelocity },
-      },
-      flapTick: state.flapTick + 1,
-    };
-  }),
+  jump: () => set((state) => ({
+    bird: {
+      ...state.bird,
+      vel: { ...state.bird.vel, y: CONFIG.physics.jumpVelocity },
+    },
+    flapTick: state.flapTick + 1,
+  })),
 }));
