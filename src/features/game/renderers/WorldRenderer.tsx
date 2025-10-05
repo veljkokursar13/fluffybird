@@ -317,8 +317,7 @@ export default function WorldRenderer() {
     setSkyElapsed((e) => e + dt);
   });
 
-  
-  if(!groundImg) return null;
+  // Always render sky/scene even if ground image isn't loaded yet
 
   return (
     <Canvas style={{ width, height }} pointerEvents="none">
@@ -336,7 +335,7 @@ export default function WorldRenderer() {
         />
       </Rect>
 
-      {cityBackgroundImg && (
+      {cityBackgroundImg ? (
         <>
           <SkImage 
             image={cityBackgroundImg} 
@@ -353,8 +352,8 @@ export default function WorldRenderer() {
             height={cityBackgroundHeight} 
           />
         </>
-      )}
-      {cityForegroundImg && (
+      ) : null}
+      {cityForegroundImg ? (
         <>
           <SkImage 
             image={cityForegroundImg} 
@@ -371,8 +370,8 @@ export default function WorldRenderer() {
             height={cityForegroundHeight} 
           />
         </>
-      )}
-      {bushImg && (
+      ) : null}
+      {bushImg ? (
         <>
           <SkImage 
             image={bushImg} 
@@ -389,15 +388,17 @@ export default function WorldRenderer() {
             height={bushHeight}
           />
         </>
-      )}
+      ) : null}
       
-      <SkImage 
-        image={groundImg} 
-        x={0} 
-        y={groundTop} 
-        width={width} 
-        height={groundHeight} 
-      />
+      {groundImg ? (
+        <SkImage 
+          image={groundImg} 
+          x={0} 
+          y={groundTop} 
+          width={width} 
+          height={groundHeight} 
+        />
+      ) : null}
 
       {/* Ground shadow strip at the bottom */}
       <Rect x={0} y={height - Math.min(24, groundThickness * 0.35)} width={width} height={Math.min(24, groundThickness * 0.35)}>
