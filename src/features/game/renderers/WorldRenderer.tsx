@@ -3,7 +3,6 @@ import { useWindowDimensions } from "react-native";
 import React, {useMemo, useEffect, useState, useCallback} from "react";
 import type { Bird } from "../../../engine/types";
 import { CONFIG } from "../../../engine/settings";
-import { useTicker } from "../../../hooks/useTicker";
 
  
 
@@ -310,12 +309,13 @@ export default function WorldRenderer() {
     });
   }, [cityForegroundImg, cityFgSpeed, width]);
 
-  useTicker((dt) => {
-    tickBushes(dt);
-    tickCityBg(dt);
-    tickCityFg(dt);
-    setSkyElapsed((e) => e + dt);
-  });
+  // Use a simple interval for background animations instead of duplicate ticker
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSkyElapsed((e) => e + 0.016); // ~60fps
+    }, 16);
+    return () => clearInterval(interval);
+  }, []);
 
   function AnimatedSun({ width, height, elapsed }: { width: number; height: number; elapsed: number }) {
     const sunImg = useImage(require('@assets/images/sun.png'));
