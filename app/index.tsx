@@ -7,9 +7,8 @@ import { gameStyles } from '../src/styles/styles'
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, withRepeat, withSequence, withDelay, Easing } from 'react-native-reanimated'
 import BirdImageForMenu from '@assets/images/bird-for-menu.png'
 import cityBackground from '@assets/images/city-background.png'
-import useSound from '../src/hooks/useSound'
-import fluffySoundtrack from '@assets/audio/fluffy-soundtrack.wav'
-import SoundSettingButton from '../src/features/ui/buttons/SoundSettingButton'
+
+
 import { useState, useEffect } from 'react'
 import { Asset } from 'expo-asset'
 //preload images
@@ -109,14 +108,11 @@ function Particle({ size, left, duration, delay, screenHeight }: { size: number;
 }
 export default function MenuScreen() {
   const fontsLoaded = useFont();
-  const menuMusic = useSound(fluffySoundtrack)
+
   
   const handleStartGame = async () => {
     try {
-      if (menuMusic) {
-        menuMusic.pause()
-        await menuMusic.seekTo(0)
-      }
+
     } catch {}
     router.push('/game')
   }
@@ -129,7 +125,7 @@ export default function MenuScreen() {
      
   <ImageBackground source={cityBackground} style={indexStyles.background} imageStyle={indexStyles.backgroundImage}>
         <AddParticles />
-        <SoundSettingButton />
+    
         <View style={indexStyles.hero}>
           <BirdImageAnimation />
           <View style={indexStyles.titleBlock}>

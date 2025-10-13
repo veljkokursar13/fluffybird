@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import { CONFIG } from '../engine/settings';
-import type { Bird, Pipe } from '../engine/types';
+import { CONFIG } from '../engine/config/settings';
 import { router } from 'expo-router';
+import { Bird, jumpBooster } from '../engine/entities/bird';
+import { Pipes } from '../engine/entities/pipes';
 
 
 export type GameState = 'menu' | 'playing' | 'paused' | 'gameOver';
@@ -20,15 +21,17 @@ interface GameStore {
   
   // Game entities
   bird: Bird;
-  pipes: Pipe[];
+  pipes: Pipes[];
+  
   
   // Game actions
   setGameState: (state: GameState) => void;
+  setGameOverState: (state: GameState) => void;
+  gameOver: () => void;
   incrementScore: () => void;
   resetGame: () => void;
   backToMenu: () => void;
   updateBird: (bird: Partial<Bird>) => void;
-  updatePipes: (pipes: Pipe[]) => void;
   jump: () => void;
 }
 
@@ -36,6 +39,7 @@ const initialBird: Bird = {
   pos: { x: CONFIG.bird.startX, y: CONFIG.bird.startY },
   vel: { x: 0, y: 0 },
   r: CONFIG.bird.radius,
+  size: CONFIG.bird.size,
 };
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -50,22 +54,36 @@ export const useGameStore = create<GameStore>((set, get) => ({
   
   // Actions
   setGameState: (gameState) => set({ gameState }),
+  setGameOverState: (state) => {
+    set({ gameState: state });
+    if (state === 'gameOver') {
+      const currentScore = get().score;
+      set((s) => ({ bestScore: Math.max(currentScore, s.bestScore) }));
+    }
+  },
   setMuted: (muted) => set({ muted }),
   toggleMuted: () => set((state) => ({ muted: !state.muted })),
-  
   incrementScore: () => set((state) => {
-    const newScore = state.score;
+    const newScore = state.score + 1;
     return {
       score: newScore,
       bestScore: Math.max(newScore, state.bestScore),
     };
   }),
   
+  gameOver: () => {
+    set({ gameState: 'gameOver' });
+    const currentScore = get().score;
+    set((state) => ({
+      bestScore: Math.max(currentScore, state.bestScore),
+    }));
+  },
+  
   resetGame: () => set({
     gameState: 'menu',
     score: 0,
     bird: { ...initialBird },
-    pipes: [],
+    flapTick: 0,
   }),
   
   backToMenu: () => {
@@ -73,16 +91,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
     router.replace('/');
   },
   
-  updateBird: (birdUpdate) => set((state) => ({
+  updateBird: (birdUpdate: Partial<Bird>) => set((state) => ({
     bird: { ...state.bird, ...birdUpdate },
   })),
   
-  updatePipes: (pipes) => set({ pipes }),
+
   
   jump: () => set((state) => ({
     bird: {
       ...state.bird,
-      vel: { ...state.bird.vel, y: CONFIG.physics.jumpVelocity },
+      vel: { ...state.bird.vel, y: jumpBooster(CONFIG.physics.jumpVelocity) },
     },
     flapTick: state.flapTick + 1,
   })),

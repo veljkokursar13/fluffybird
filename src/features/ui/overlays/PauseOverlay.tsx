@@ -6,7 +6,7 @@ import RestartButton from '../buttons/RestartButton';
 import { BlurView } from 'expo-blur';
 import BestScoreDisplay from '../common/BestScoreDisplay';
 import { overlayStyles } from '../../../styles/styles';
-import SoundSettingButton from '../buttons/SoundSettingButton';
+
 
 export default function PauseOverlay() {
   const gameState = useGameStore((state) => state.gameState);
@@ -35,7 +35,7 @@ export default function PauseOverlay() {
   return (
     <View style={overlayStyles.overlay}>
       <BlurView intensity={50} tint="dark" style={StyleSheet.absoluteFill} />
-      <SoundSettingButton />
+     
       <View style={overlayStyles.modal}>
         <Text style={[overlayStyles.modalTitle, PauseOverlayLocalStyles.title]}>Paused</Text>
         <View style={overlayStyles.modalContent}>

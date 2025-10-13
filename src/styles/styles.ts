@@ -311,6 +311,11 @@ export const overlayStyles = StyleSheet.create({
     alignItems: 'center',
     width: screenWidth,
     height: screenHeight,
+    zIndex: 1000,
+    // Ensure top-most on Android too
+    elevation: 1000,
+    // Intercept touches so the game underneath doesn't receive them
+    pointerEvents: 'auto',
   },
   
   modal: {
@@ -352,7 +357,14 @@ export const overlayStyles = StyleSheet.create({
     width: '100%',
   },
 });
-
+//sun styles
+export const sunStyles = StyleSheet.create({
+  sun: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+  },
+});
 // HUD Styles
 export const hudStyles = StyleSheet.create({
   hud: {
@@ -411,6 +423,12 @@ export const gameStyles = StyleSheet.create({
 
   gameArea: {
     flex: 1,
+  },
+
+  tapCatcher: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'transparent',
+    zIndex: 8,
   },
 
   iconRow: {

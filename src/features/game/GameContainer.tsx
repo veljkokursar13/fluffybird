@@ -1,36 +1,26 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, Pressable } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { gameStyles, hudStyles } from '../../styles/styles';
-import { WorldRenderer } from './renderers/WorldRenderer';
+import { WorldRenderer } from './renderers/WorldRenderer';  
+
+import BirdRenderer from './renderers/BirdRenderer';
 import { useGameStore } from '../../store/gameStore';
-import { Pause,  } from 'lucide-react-native';
+import { Pause } from 'lucide-react-native';
+import { useTicker } from '../../hooks/useTicker';
+import { CONFIG } from '../../engine/config/settings';
 // UI Overlays
 import GameOverOverlay from '../ui/overlays/GameOverOverlay';
 import PauseOverlay from '../ui/overlays/PauseOverlay';
 import ScoreDisplay from '../ui/common/ScoreDisplay';
-import { applyBirdPhysics, checkCollisions } from '../../engine/physics';
-import type { Bird } from '../../engine/types';
-import { CONFIG } from '../../engine/settings';
-import { useTicker } from '../../hooks/useTicker';
+import { collisionSystem } from '../../engine/systems/collision';
+import { PipeRenderer } from './renderers/PipeRenderer';
+import { spawningSystem } from '../../engine/systems/spawning';
+import type { DifficultyLevel } from '../../engine/config/difficulty';
 
 
 export default function GameContainer() {
   const gameState = useGameStore((state) => state.gameState);
-  const jump = useGameStore((state) => state.jump);
-  const updateBird = useGameStore((state) => state.updateBird);
   const setGameState = useGameStore((state) => state.setGameState);
-
-
-  // Menu/overlay soundtrack (controlled by mute, auto-off when playing)
- 
-  // useGameLoop();
-
-  // Ensure HUD/icons render by starting gameplay from menu
-  useEffect(() => {
-    if (gameState === 'menu') {
-      setGameState('playing');
-    }
-  }, [gameState, setGameState]);
 
   // Control menu soundtrack by state + mute
   
@@ -43,60 +33,97 @@ export default function GameContainer() {
   useEffect(() => {
     if (gameState === 'menu' || gameState === 'gameOver') {
       setHasStarted(false);
+    } if(gameState === 'playing' && !hasStarted) {
+      setHasStarted(true);
+      useGameStore.setState((s) => ({ flapTick: s.flapTick > 0 ? s.flapTick : 1 }));
     }
   }, [gameState]);
 
-  const tickPhysics = useCallback((dt: number) => {
-    if (!hasStarted || gameState !== 'playing') return;
-    const current: Bird = useGameStore.getState().bird as Bird;
 
-    const stepped: Bird = {
-      pos: { ...current.pos },
-      vel: { ...current.vel },
-      r: current.r,
-    };
-    applyBirdPhysics(stepped, CONFIG.physics.gravity, dt);
-
-    const groundY = CONFIG.screen.floorY;
-    const skyY = 0;
-    const hit = checkCollisions(stepped, [], groundY, skyY);
-    if (hit === 'ground') {
-      stepped.pos.y = groundY - stepped.r;
-      stepped.vel.y = 0;
-      updateBird({ pos: stepped.pos, vel: stepped.vel });
-      setGameState('gameOver');
-      return;
-    }
-    
-
-    updateBird({ pos: stepped.pos, vel: stepped.vel });
-  }, [hasStarted, gameState, updateBird, setGameState]);
-
-  useTicker(tickPhysics);
-
-  const handleTap = () => {
-    if (gameState === 'playing') {
-      if (!hasStarted) setHasStarted(true);
-      jump();
-    } else if (gameState === 'gameOver') {
-      // Restart handled by GameOverOverlay buttons
-    }
-  };
 
   const handlePause = () => {
     setGameState('paused');
   };
+  const handleTap = () => {
+    const store = useGameStore.getState();
+    if (gameState === 'menu') {
+      setGameState('playing');
+      // ensure physics starts and apply an initial jump for feedback
+      useGameStore.setState((s) => ({ flapTick: s.flapTick > 0 ? s.flapTick : 1 }));
+      // next frame to ensure state transition is reflected
+      requestAnimationFrame(() => store.jump());
+      return;
+    }
+    if (gameState === 'playing') {
+      store.jump();
+      return;
+    }
+  };
+
+  const bird = useGameStore((state) => state.bird);
+  const flapTick = useGameStore((state) => state.flapTick);
+  const pipes = useGameStore((state) => state.pipes);
+  const moving = useGameStore((state) => state.flapTick > 0);
+  const score = useGameStore((state) => state.score);
+  // Physics: apply gravity and integrate only after first tap
+  useTicker((dt) => {
+    const store = useGameStore.getState();
+    if (store.gameState !== 'playing') return;
+    const current = store.bird;
+    const gravity = CONFIG.physics.gravity;
+    const maxFall = CONFIG.physics.maxFallSpeed;
+
+    let velY = current.vel.y;
+    let posY = current.pos.y;
+    // Apply gravity immediately once playing
+    velY = current.vel.y + gravity * dt;
+    if (velY > maxFall) velY = maxFall;
+    posY = current.pos.y + velY * dt;
+
+    const floorClampY = CONFIG.screen.floorY - current.size;
+    if (posY > floorClampY) {
+      posY = floorClampY;
+      velY = 0;
+    }
+    if (posY < 0) {
+      posY = 0;
+      velY = 0;
+    }
+
+    store.updateBird({
+      pos: { x: current.pos.x, y: posY },
+      vel: { x: current.vel.x, y: velY },
+    });
+
+    // Difficulty based on score thresholds
+    let level: DifficultyLevel = 'easy';
+    if (score >= 50) level = 'hard';
+    else if (score >= 20) level = 'medium';
+    // Spawn/move pipes according to difficulty
+    spawningSystem(dt, level);
+
+    // Collision check against ground/ceiling and pipes (if any)
+    const birdRect = { x: current.pos.x, y: posY, width: current.size, height: current.size };
+    const pipeRects = pipes.map((p) => ({ x: p.pos.x, y: p.pos.y, width: p.width, height: p.height }));
+    const hit = collisionSystem(birdRect, pipeRects, CONFIG.screen.floorY, 0);
+    if (hit) {
+      store.setGameOverState('gameOver');
+    }
+  });
+
   return (
-    <View style={gameStyles.gameArea}>
-      {/* World (background) + Bird (inside Canvas) */}
-      <WorldRenderer />
+    <View style={[gameStyles.gameArea, StyleSheet.absoluteFillObject]}>
+      <WorldRenderer moving={moving} />
+      
+  {/* Bird (with integrated wings) */}
+  <BirdRenderer bird={bird} flapTick={flapTick} />
 
       {/* Full-screen tap layer (does not cover HUD/overlays visually) */}
-      <Pressable onPress={handleTap} style={StyleSheet.absoluteFill} />
-
+      <TouchableOpacity onPress={handleTap} activeOpacity={1} style={gameStyles.tapCatcher} />
+<PipeRenderer pipes={pipes} />
       {/* HUD while playing */}
       {gameState === 'playing' && (
-        <View style={hudStyles.hud}>
+        <View style={hudStyles.hud} pointerEvents="box-none">
           <ScoreDisplay />
           <View style={gameStyles.iconRow}>
             {/* here will be placed icons once we put the sound settings in the game */}
@@ -113,4 +140,6 @@ export default function GameContainer() {
     </View>
   );
 }
+
+
 
