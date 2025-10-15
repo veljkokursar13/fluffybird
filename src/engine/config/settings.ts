@@ -39,7 +39,7 @@ const { width, height } = Dimensions.get('window');
 export const CONFIG: Readonly<Config> = {
   screen: { width, height, floorY: height - 100 },
   bird: {
-    size: 48,
+    size: 48 *0.8,
     startX: Math.round(width * 0.25),
     startY: Math.round(height * 0.5),
     radius: Math.round(width * 0.05),
@@ -54,13 +54,13 @@ export const CONFIG: Readonly<Config> = {
     dt: 1 / 60,
   },
   pipe: {
-    width: 64,
+    width: 64 *0.7,
     speed: 240,
     height: 400, // Individual pipe segment height
 
     // Gap between top and bottom pipe in a pair
-    pipeCapHeight: 54,
-    pipeCapWidth: 120,
+    pipeCapHeight: 54 *0.6,
+    pipeCapWidth: 120 *0.7,
     minGap: 300,
     maxGap: 500,
     minSpacing: 200,

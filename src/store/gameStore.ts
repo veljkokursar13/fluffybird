@@ -31,6 +31,7 @@ interface GameStore {
   gameOver: () => void;
   incrementScore: () => void;
   resetGame: () => void;
+  clearGameCache: () => void; // Clears game state but preserves bestScore
   backToMenu: () => void;
   updateBird: (bird: Partial<Bird>) => void;
   jump: () => void;
@@ -52,14 +53,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
   muted: false,
   bird: initialBird,
   pipes: [],
-  setResetGame: () => set({ gameState: 'reset' }),
-  setResetGameState: (state: GameState) => {
-    set({ gameState: 'reset' });
-    if (state === 'gameOver') {
-      const currentScore = get().score;
-      set((s) => ({ bestScore: Math.max(currentScore, s.bestScore) }));
-    }
-  },
 
   // Actions
   setGameState: (gameState) => set({ gameState }),
@@ -91,6 +84,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
   resetGame: () => set({
     gameState: 'menu',
     score: 0,
+    bird: { ...initialBird },
+    pipes: [],
+    jumpTick: 0,
+  }),
+  
+  // Clear all game cache (bird, pipes, score, jumpTick) but preserve bestScore
+  clearGameCache: () => set({
     bird: { ...initialBird },
     pipes: [],
     jumpTick: 0,

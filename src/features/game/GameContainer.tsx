@@ -21,10 +21,15 @@ export default function GameContainer() {
   const gameState = useGameStore((state) => state.gameState);
   const setGameState = useGameStore((state) => state.setGameState);
   const resetGame = useGameStore((state) => state.resetGame);
-  // Control menu soundtrack by state + mute
+  const clearGameCache = useGameStore((state) => state.clearGameCache);
   
-
-  // (removed) pre-tap physics loop; physics starts only after first tap
+  // Clear game cache and reset spawn timer when game ends
+  useEffect(() => {
+    if (gameState === 'gameOver') {
+      clearGameCache();
+      resetSpawnTimer();
+    }
+  }, [gameState, clearGameCache]);
 
   // Start physics only after first tap
   const [hasStarted, setHasStarted] = useState(false);
