@@ -3,7 +3,7 @@ import { Canvas, Image as SkiaImage, useImage } from   "@shopify/react-native-sk
 import { Bird, } from "../../../engine/entities/bird";
 import { ViewStyle } from "react-native";
 import { useEffect, useState } from "react";
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withSequence, withTiming } from "react-native-reanimated";
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 
 const birdSrc = require("@assets/images/birdmain.png");
 const wingsSrcDown = require("@assets/images/wingbottom.png");
@@ -14,10 +14,10 @@ type WingKey = "up" | "down" | "center" | "centerupper";
 
 // Centralized per-sprite layout; using the same positions/pivots for all
 const WING_SPRITES: Record<WingKey, { src: any; leftMul: number; topMul: number; pivotXMul: number; pivotYMul: number }> = {
-  up: { src: wingsSrcUp, leftMul: 0.12, topMul: 0.32, pivotXMul: 0.3, pivotYMul: 0.5 },
-  down: { src: wingsSrcDown, leftMul: 0.12, topMul: 0.32, pivotXMul: 0.3, pivotYMul: 0.5 },
-  center: { src: wingsSrcCenter, leftMul: 0.12, topMul: 0.32, pivotXMul: 0.3, pivotYMul: 0.5 },
-  centerupper: { src: wingsSrcCenter, leftMul: 0.12, topMul: 0.32, pivotXMul: 0.3, pivotYMul: 0.5 }, // use center-upper sprite
+  up: { src: wingsSrcUp, leftMul: 0.06, topMul: 0.40, pivotXMul: 0.3, pivotYMul: 0.5 },
+  down: { src: wingsSrcDown, leftMul: 0.06, topMul: 0.40, pivotXMul: 0.3, pivotYMul: 0.5 },
+  center: { src: wingsSrcCenter, leftMul: 0.06, topMul: 0.40, pivotXMul: 0.3, pivotYMul: 0.5 },
+  centerupper: { src: wingsSrcCenter, leftMul: 0.06, topMul: 0.40, pivotXMul: 0.3, pivotYMul: 0.5 },
 };
 
 export default function BirdRenderer({ bird, flapTick }: { bird: Bird; flapTick: number }) {
@@ -53,39 +53,14 @@ export default function BirdRenderer({ bird, flapTick }: { bird: Bird; flapTick:
   const wingSize = Math.round(bird.size * 0.5);
   const wingLeft = Math.round(bird.size * wingCfg.leftMul);
   const wingTop = Math.round(bird.size * wingCfg.topMul);
-  const pivotX = Math.round(wingSize * wingCfg.pivotXMul);
-  const pivotY = Math.round(wingSize * wingCfg.pivotYMul);
-
-  const wingRot = useSharedValue(0);
+  // Simple wing frame loop on tap: down -> center -> up -> center
   useEffect(() => {
-    // On flap: animate wing states: down -> center -> centerupper -> up, then back to center (rest)
     setWing("down");
-    wingRot.value = withSequence(
-      withTiming(0.35, { duration: 90, easing: Easing.out(Easing.cubic) }),   // down-ish
-      withTiming(0.1, { duration: 80, easing: Easing.inOut(Easing.cubic) }),  // center
-      withTiming(-0.2, { duration: 80, easing: Easing.inOut(Easing.cubic) }), // centerupper
-      withTiming(-0.5, { duration: 90, easing: Easing.in(Easing.cubic) }),    // up
-      withTiming(0, { duration: 150, easing: Easing.inOut(Easing.cubic) })    // settle to neutral
-    );
-    const t1 = setTimeout(() => setWing("center"), 100);
-    const t2 = setTimeout(() => setWing("centerupper"), 180);
-    const t3 = setTimeout(() => setWing("up"), 260);
-    const t4 = setTimeout(() => setWing("center"), 420); // return to normal
-
-    return () => {
-      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4);
-    };
-  }, [flapTick, wingRot]);
-
-  const wingStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: pivotX },
-      { translateY: pivotY },
-      { rotate: `${wingRot.value}rad` },
-      { translateX: -pivotX },
-      { translateY: -pivotY },
-    ],
-  }));
+    const t1 = setTimeout(() => setWing("center"), 80);
+    const t2 = setTimeout(() => setWing("up"), 160);
+    const t3 = setTimeout(() => setWing("center"), 260);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, [flapTick]);
 
   return (
     <Animated.View style={[{ 
@@ -107,7 +82,7 @@ export default function BirdRenderer({ bird, flapTick }: { bird: Bird; flapTick:
           top: wingTop,
           width: wingSize,
           height: wingSize,
-        } as ViewStyle, wingStyle]}>
+        } as ViewStyle]}>
           <Canvas style={{ width: wingSize, height: wingSize } as ViewStyle}>
             <SkiaImage image={wingImage} x={0} y={0} width={wingSize} height={wingSize} fit="contain" />
           </Canvas>

@@ -11,8 +11,8 @@ export default function BestScoreDisplay({ bestScore, currentScore }: BestScoreD
   
   return (
     <View>
-      <Text style={hudStyles.scoreText}>Score: {currentScore}</Text>
-      <Text style={[hudStyles.scoreText, isNewBest && { color: '#FFD700', fontWeight: '700' }]}>Best: {bestScore}</Text>
+      <Text style={hudStyles.scoreTextForOverlays}>Score: {currentScore}</Text>
+      <Text style={[hudStyles.scoreTextForOverlays, isNewBest && { color: '#FFD700', fontWeight: '700' }]}>Best: {bestScore}</Text>
     </View>
   );
 }

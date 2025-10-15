@@ -20,6 +20,7 @@
     "expo-linear-gradient": "^15.0.7",
     "expo-router": "^6.0.7",
     "expo-status-bar": "~3.0.8",
+    "linear-gradient": "^1.0.6",
     "lucide-react-native": "^0.544.0",
     "react": "19.1.0",
     "react-icons": "^5.5.0",

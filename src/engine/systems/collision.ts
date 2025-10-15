@@ -1,8 +1,12 @@
 //collision system goes here
 
+import type { PipePair } from "../entities/pipes";
+import { CONFIG } from "../config/settings";
+
 type Rect = { x: number; y: number; width: number; height: number; };
 
 export const collisionStates = {
+  CAP: 'cap',
   TOP: 'top',
   BOTTOM: 'bottom',
 } as const;
@@ -20,7 +24,7 @@ const intersects = (a: Rect, b: Rect): boolean => {
 
 export const collisionSystem = (
   bird: Rect,
-  pipes: Rect[],
+  pipePairs: PipePair[],
   groundY: number,
   ceilingY: number = 0
 ): CollisionState => {
@@ -29,14 +33,54 @@ export const collisionSystem = (
   } else if (ceilingY >= bird.y) {
     return collisionStates.TOP;
   } else {
-    for (const pipe of pipes) {
-      if (intersects(bird, pipe)) {
-        // Determine if collision is from top or bottom based on bird's position
-        if (bird.y + bird.height / 2 < pipe.y + pipe.height / 2) {
-          return collisionStates.TOP;
-        } else {
-          return collisionStates.BOTTOM;
-        }
+    // Get cap dimensions from config
+    const capHeight = CONFIG.pipe.pipeCapHeight;
+    const capWidth = CONFIG.pipe.pipeCapWidth;
+    
+    for (const pair of pipePairs) {
+      // Bottom pipe body (without cap)
+      const bottomPipeBodyRect = { 
+        x: pair.bottom.pos.x, 
+        y: pair.bottom.pos.y + capHeight, 
+        width: pair.bottom.width, 
+        height: pair.bottom.height - capHeight 
+      };
+      
+      // Bottom pipe cap (top of bottom pipe)
+      const bottomCapRect = {
+        x: pair.bottom.pos.x - (capWidth - pair.bottom.width) / 2,
+        y: pair.bottom.pos.y,
+        width: capWidth,
+        height: capHeight
+      };
+      
+      // Top pipe body (without cap)
+      const topPipeBodyRect = { 
+        x: pair.top.pos.x, 
+        y: pair.top.pos.y, 
+        width: pair.top.width, 
+        height: pair.top.height - capHeight 
+      };
+      
+      // Top pipe cap (bottom of top pipe, rotated)
+      const topCapRect = {
+        x: pair.top.pos.x - (capWidth - pair.top.width) / 2,
+        y: pair.top.pos.y + pair.top.height - capHeight,
+        width: capWidth,
+        height: capHeight
+      };
+
+      // Check collisions - caps first for priority
+      if (intersects(bird, bottomCapRect) || intersects(bird, topCapRect)) {
+        return collisionStates.CAP;
+      }
+      
+      if (intersects(bird, bottomPipeBodyRect)) {
+        return collisionStates.BOTTOM;
+      }
+      
+      if (intersects(bird, topPipeBodyRect)) {
+        return collisionStates.TOP;
       }
     }
   }

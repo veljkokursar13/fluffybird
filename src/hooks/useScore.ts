@@ -14,3 +14,5 @@ export function useBestScore() {
   const bestScore = useGameStore((state) => state.bestScore) || initialBestScore;
   return { bestScore };
 }
+
+

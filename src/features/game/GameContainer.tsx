@@ -17,11 +17,10 @@ import { PipeRenderer } from './renderers/PipeRenderer';
 import { spawningSystem } from '../../engine/systems/spawning';
 import type { DifficultyLevel } from '../../engine/config/difficulty';
 
-
 export default function GameContainer() {
   const gameState = useGameStore((state) => state.gameState);
   const setGameState = useGameStore((state) => state.setGameState);
-
+  const resetGame = useGameStore((state) => state.resetGame);
   // Control menu soundtrack by state + mute
   
 
@@ -29,15 +28,29 @@ export default function GameContainer() {
 
   // Start physics only after first tap
   const [hasStarted, setHasStarted] = useState(false);
+  const [isBirdDead, setIsBirdDead] = useState(false);
 
   useEffect(() => {
     if (gameState === 'menu' || gameState === 'gameOver') {
       setHasStarted(false);
+     
     } if(gameState === 'playing' && !hasStarted) {
       setHasStarted(true);
       useGameStore.setState((s) => ({ flapTick: s.flapTick > 0 ? s.flapTick : 1 }));
     }
   }, [gameState]);
+
+  // Reset game when bird dies
+  useEffect(() => {
+    if (isBirdDead) {
+      // Brief delay to show game over, then reset
+      const timer = setTimeout(() => {
+        resetGame();
+        setIsBirdDead(false);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [isBirdDead, resetGame]);
 
 
 
@@ -104,23 +117,28 @@ export default function GameContainer() {
 
     // Collision check against ground/ceiling and pipes (if any)
     const birdRect = { x: current.pos.x, y: posY, width: current.size, height: current.size };
-    const pipeRects = pipes.map((p) => ({ x: p.pos.x, y: p.pos.y, width: p.width, height: p.height }));
-    const hit = collisionSystem(birdRect, pipeRects, CONFIG.screen.floorY, 0);
-    if (hit) {
+    const hit = collisionSystem(birdRect, pipes, CONFIG.screen.floorY, 0);
+    if (hit && !isBirdDead) {
       store.setGameOverState('gameOver');
+      setIsBirdDead(true);
     }
+
+
   });
 
   return (
     <View style={[gameStyles.gameArea, StyleSheet.absoluteFillObject]}>
       <WorldRenderer moving={moving} />
-      
+      {/* Pipes should render above world layers, below HUD/overlays */}
+      <View style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, zIndex: 9 }} pointerEvents="none">
+        <PipeRenderer pipes={pipes} />
+      </View>
+
   {/* Bird (with integrated wings) */}
   <BirdRenderer bird={bird} flapTick={flapTick} />
 
       {/* Full-screen tap layer (does not cover HUD/overlays visually) */}
       <TouchableOpacity onPress={handleTap} activeOpacity={1} style={gameStyles.tapCatcher} />
-<PipeRenderer pipes={pipes} />
       {/* HUD while playing */}
       {gameState === 'playing' && (
         <View style={hudStyles.hud} pointerEvents="box-none">

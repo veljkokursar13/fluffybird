@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { CONFIG } from '../engine/config/settings';
 import { router } from 'expo-router';
 import { Bird, jumpBooster } from '../engine/entities/bird';
-import { Pipes } from '../engine/entities/pipes';
+import { PipePair } from '../engine/entities/pipes';
 
 
 export type GameState = 'menu' | 'playing' | 'paused' | 'gameOver';
@@ -21,7 +21,7 @@ interface GameStore {
   
   // Game entities
   bird: Bird;
-  pipes: Pipes[];
+  pipes: PipePair[];
   
   
   // Game actions
