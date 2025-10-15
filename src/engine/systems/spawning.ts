@@ -6,6 +6,10 @@ import { difficultySetting, DifficultyLevel } from "../config/difficulty";
 
 let timeSinceLastSpawn = 0;
 
+export function resetSpawnTimer() {
+  timeSinceLastSpawn = 0;
+}
+
 export function spawningSystem(dt: number, level: DifficultyLevel) {
   const speed = difficultySetting.getPipeSpeed(level);
   const interval = difficultySetting.getPipeInterval(level); // ms

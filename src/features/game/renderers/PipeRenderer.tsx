@@ -6,7 +6,7 @@ import type { PipePair } from "@src/engine/entities/pipes";
 
 const pipeImage = require("@assets/images/pipebody.png");
 const capImage = require("@assets/images/pipecapnewnew.png");
-
+ 
 // Placeholder implementation 
 
 type PipeRendererProps = {

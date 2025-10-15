@@ -5,15 +5,16 @@ import { Bird, jumpBooster } from '../engine/entities/bird';
 import { PipePair } from '../engine/entities/pipes';
 
 
-export type GameState = 'menu' | 'playing' | 'paused' | 'gameOver';
+export type GameState = 'menu' | 'playing' | 'paused' | 'gameOver' | 'reset';
+export const gameStates: GameState[] = ['menu', 'playing', 'paused', 'gameOver', 'reset'];
 
 interface GameStore {
   // Game state
   gameState: GameState;
   score: number;
   bestScore: number;
-  // Input animation ticks
-  flapTick: number;
+  // Input state
+  jumpTick: number; // Increments on each jump to trigger animations
   // Sound state
   muted: boolean;
   setMuted: (muted: boolean) => void;
@@ -47,11 +48,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
   gameState: 'menu',
   score: 0,
   bestScore: 0,
+  jumpTick: 0,
   muted: false,
   bird: initialBird,
   pipes: [],
-  flapTick: 0,
-  
+  setResetGame: () => set({ gameState: 'reset' }),
+  setResetGameState: (state: GameState) => {
+    set({ gameState: 'reset' });
+    if (state === 'gameOver') {
+      const currentScore = get().score;
+      set((s) => ({ bestScore: Math.max(currentScore, s.bestScore) }));
+    }
+  },
+
   // Actions
   setGameState: (gameState) => set({ gameState }),
   setGameOverState: (state) => {
@@ -83,7 +92,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     gameState: 'menu',
     score: 0,
     bird: { ...initialBird },
-    flapTick: 0,
+    pipes: [],
+    jumpTick: 0,
   }),
   
   backToMenu: () => {
@@ -102,6 +112,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
       ...state.bird,
       vel: { ...state.bird.vel, y: jumpBooster(CONFIG.physics.jumpVelocity) },
     },
-    flapTick: state.flapTick + 1,
+    jumpTick: state.jumpTick + 1,
   })),
 }));

@@ -14,7 +14,7 @@ import PauseOverlay from '../ui/overlays/PauseOverlay';
 import ScoreDisplay from '../ui/common/ScoreDisplay';
 import { collisionSystem } from '../../engine/systems/collision';
 import { PipeRenderer } from './renderers/PipeRenderer';
-import { spawningSystem } from '../../engine/systems/spawning';
+import { spawningSystem, resetSpawnTimer } from '../../engine/systems/spawning';
 import type { DifficultyLevel } from '../../engine/config/difficulty';
 
 export default function GameContainer() {
@@ -28,7 +28,6 @@ export default function GameContainer() {
 
   // Start physics only after first tap
   const [hasStarted, setHasStarted] = useState(false);
-  const [isBirdDead, setIsBirdDead] = useState(false);
 
   useEffect(() => {
     if (gameState === 'menu' || gameState === 'gameOver') {
@@ -36,21 +35,8 @@ export default function GameContainer() {
      
     } if(gameState === 'playing' && !hasStarted) {
       setHasStarted(true);
-      useGameStore.setState((s) => ({ flapTick: s.flapTick > 0 ? s.flapTick : 1 }));
     }
   }, [gameState]);
-
-  // Reset game when bird dies
-  useEffect(() => {
-    if (isBirdDead) {
-      // Brief delay to show game over, then reset
-      const timer = setTimeout(() => {
-        resetGame();
-        setIsBirdDead(false);
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [isBirdDead, resetGame]);
 
 
 
@@ -61,8 +47,6 @@ export default function GameContainer() {
     const store = useGameStore.getState();
     if (gameState === 'menu') {
       setGameState('playing');
-      // ensure physics starts and apply an initial jump for feedback
-      useGameStore.setState((s) => ({ flapTick: s.flapTick > 0 ? s.flapTick : 1 }));
       // next frame to ensure state transition is reflected
       requestAnimationFrame(() => store.jump());
       return;
@@ -74,10 +58,14 @@ export default function GameContainer() {
   };
 
   const bird = useGameStore((state) => state.bird);
-  const flapTick = useGameStore((state) => state.flapTick);
   const pipes = useGameStore((state) => state.pipes);
-  const moving = useGameStore((state) => state.flapTick > 0);
+  const jumpTick = useGameStore((state) => state.jumpTick);
+  const moving = gameState === 'playing';
   const score = useGameStore((state) => state.score);
+  
+  // Only render pipes during gameplay (clear immediately on game over for clean transition)
+  const pipesToRender = gameState === 'playing' ? pipes : [];
+  
   // Physics: apply gravity and integrate only after first tap
   useTicker((dt) => {
     const store = useGameStore.getState();
@@ -118,9 +106,8 @@ export default function GameContainer() {
     // Collision check against ground/ceiling and pipes (if any)
     const birdRect = { x: current.pos.x, y: posY, width: current.size, height: current.size };
     const hit = collisionSystem(birdRect, pipes, CONFIG.screen.floorY, 0);
-    if (hit && !isBirdDead) {
+    if (hit) {
       store.setGameOverState('gameOver');
-      setIsBirdDead(true);
     }
 
 
@@ -131,11 +118,11 @@ export default function GameContainer() {
       <WorldRenderer moving={moving} />
       {/* Pipes should render above world layers, below HUD/overlays */}
       <View style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, zIndex: 9 }} pointerEvents="none">
-        <PipeRenderer pipes={pipes} />
+        <PipeRenderer pipes={pipesToRender} />
       </View>
 
   {/* Bird (with integrated wings) */}
-  <BirdRenderer bird={bird} flapTick={flapTick} />
+      <BirdRenderer bird={bird} jumpTick={jumpTick} />
 
       {/* Full-screen tap layer (does not cover HUD/overlays visually) */}
       <TouchableOpacity onPress={handleTap} activeOpacity={1} style={gameStyles.tapCatcher} />

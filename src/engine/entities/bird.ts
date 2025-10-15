@@ -104,8 +104,3 @@ export function getBirdRect(bird: Bird) {
     height: bird.size,
   };
 }
-export function wingsMovement(flapTick: number, birdSize: number) {
-  if (flapTick <= 0) return birdSize * 0.4;
-  const phase = (flapTick % CONFIG.bird.flapCycle) / CONFIG.bird.flapCycle;
-  return birdSize * (0.4 + 0.6 * phase);
-}

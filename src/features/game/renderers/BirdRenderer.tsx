@@ -20,19 +20,47 @@ const WING_SPRITES: Record<WingKey, { src: any; leftMul: number; topMul: number;
   centerupper: { src: wingsSrcCenter, leftMul: 0.06, topMul: 0.40, pivotXMul: 0.3, pivotYMul: 0.5 },
 };
 
-export default function BirdRenderer({ bird, flapTick }: { bird: Bird; flapTick: number }) {
+type BirdRendererProps = {
+  bird: Bird;
+  jumpTick: number;
+};
+
+export default function BirdRenderer({ bird, jumpTick }: BirdRendererProps) {
   const birdImage = useImage(birdSrc);
-  // Body tilt based on vertical velocity for a more natural feel
   const tilt = useSharedValue(0);
+  
+  const [wing, setWing] = useState<WingKey>("center");
+  
+  const wingCfg = WING_SPRITES[wing];
+  const wingImage = useImage(wingCfg.src);
+  const wingSize = Math.round(bird.size * 0.5);
+  const wingLeft = Math.round(bird.size * wingCfg.leftMul);
+  const wingTop = Math.round(bird.size * wingCfg.topMul);
 
-  // Map velocity to angle in radians: fast up => tilt up; falling => tilt down
-  const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
-  const map = (v: number, inMin: number, inMax: number, outMin: number, outMax: number) =>
-    outMin + ((clamp(v, inMin, inMax) - inMin) * (outMax - outMin)) / (inMax - inMin);
-
-  // Smoothly follow velocity changes
+  // Trigger wing flap animation on each jump
   useEffect(() => {
-    const angle = map(bird.vel.y, -480, 480, -Math.PI / 6, Math.PI / 12); // -30deg to +15deg
+    if (jumpTick === 0) return; // Skip initial render
+    
+    // Wing flap sequence: down -> center -> up -> center
+    setWing("down");
+    const t1 = setTimeout(() => setWing("center"), 80);
+    const t2 = setTimeout(() => setWing("up"), 160);
+    const t3 = setTimeout(() => setWing("center"), 260);
+    
+    return () => { 
+      clearTimeout(t1); 
+      clearTimeout(t2); 
+      clearTimeout(t3); 
+    };
+  }, [jumpTick]);
+
+  // Body tilt based on velocity
+  useEffect(() => {
+    const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
+    const map = (v: number, inMin: number, inMax: number, outMin: number, outMax: number) =>
+      outMin + ((clamp(v, inMin, inMax) - inMin) * (outMax - outMin)) / (inMax - inMin);
+    
+    const angle = map(bird.vel.y, -480, 480, -Math.PI / 6, Math.PI / 12);
     tilt.value = withTiming(angle, { duration: 120, easing: Easing.inOut(Easing.cubic) });
   }, [bird.vel.y, tilt]);
 
@@ -45,22 +73,6 @@ export default function BirdRenderer({ bird, flapTick }: { bird: Bird; flapTick:
       { translateY: -bird.size / 2 },
     ],
   }));
-
-  // Simple wings: render inside the bird container so they inherit the body tilt.
-  const [wing, setWing] = useState<WingKey>("center");
-  const wingCfg = WING_SPRITES[wing];
-  const wingImage = useImage(wingCfg.src);
-  const wingSize = Math.round(bird.size * 0.5);
-  const wingLeft = Math.round(bird.size * wingCfg.leftMul);
-  const wingTop = Math.round(bird.size * wingCfg.topMul);
-  // Simple wing frame loop on tap: down -> center -> up -> center
-  useEffect(() => {
-    setWing("down");
-    const t1 = setTimeout(() => setWing("center"), 80);
-    const t2 = setTimeout(() => setWing("up"), 160);
-    const t3 = setTimeout(() => setWing("center"), 260);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  }, [flapTick]);
 
   return (
     <Animated.View style={[{ 

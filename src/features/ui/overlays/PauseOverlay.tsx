@@ -6,6 +6,7 @@ import RestartButton from '../buttons/RestartButton';
 import { BlurView } from 'expo-blur';
 import BestScoreDisplay from '../common/BestScoreDisplay';
 import { overlayStyles } from '../../../styles/styles';
+import { resetSpawnTimer } from '../../../engine/systems/spawning';
 
 
 export default function PauseOverlay() {
@@ -23,11 +24,13 @@ export default function PauseOverlay() {
   };
 
   const handleRestart = () => {
+    resetSpawnTimer();
     resetGame();
     setGameState('playing');
   };
 
   const handleMenu = () => {
+    resetSpawnTimer();
     resetGame();
     backToMenu();
   };
