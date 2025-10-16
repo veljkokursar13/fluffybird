@@ -29,7 +29,6 @@ interface GameStore {
   setGameState: (state: GameState) => void;
   setGameOverState: (state: GameState) => void;
   gameOver: () => void;
-  incrementScore: () => void;
   resetGame: () => void;
   clearGameCache: () => void; // Clears game state but preserves bestScore
   backToMenu: () => void;
@@ -65,13 +64,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
   setMuted: (muted) => set({ muted }),
   toggleMuted: () => set((state) => ({ muted: !state.muted })),
-  incrementScore: () => set((state) => {
-    const newScore = state.score + 1;
-    return {
-      score: newScore,
-      bestScore: Math.max(newScore, state.bestScore),
-    };
-  }),
   
   gameOver: () => {
     set({ gameState: 'gameOver' });

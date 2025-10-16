@@ -21,11 +21,11 @@ const PIPE_HEIGHT = CONFIG.pipe?.height ?? 200;
 const MIN_GAP = CONFIG.pipe?.minGap ?? 120;
 const MAX_GAP = CONFIG.pipe?.maxGap ?? 180;
 
-export function createPipePair(x: number, gapCenter?: number): PipePair {
+export function createPipePair(x: number, gapSize?: number, gapCenter?: number): PipePair {
   const screenHeight = CONFIG.screen.height;
   const floorY = CONFIG.screen.floorY;
-  // Use a larger gap for better playability - roughly 3.5x bird size
-  const gap = Math.max(MIN_GAP, 170);
+  // Use provided gap size or fallback to default
+  const gap = gapSize ?? Math.max(MIN_GAP, 170);
   
   // If no gap center provided, position gap randomly in middle 60% of playable area
   const playableHeight = floorY - 0; // from top to floor

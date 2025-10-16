@@ -13,7 +13,8 @@ export function resetSpawnTimer() {
 export function spawningSystem(dt: number, level: DifficultyLevel) {
   const speed = difficultySetting.getPipeSpeed(level);
   const interval = difficultySetting.getPipeInterval(level); // ms
-
+  const gapSize = difficultySetting.getPipeGap(level);
+  
   timeSinceLastSpawn += dt * 1000;
 
   useGameStore.setState((state) => {
@@ -37,7 +38,7 @@ export function spawningSystem(dt: number, level: DifficultyLevel) {
     let working = visible;
     if (working.length === 0 && state.gameState === 'playing') {
       const startX = CONFIG.screen.width + 20;
-      const pair = createPipePair(startX);
+      const pair = createPipePair(startX, gapSize);
       working = [pair];
       timeSinceLastSpawn = 0;
     }
@@ -58,7 +59,7 @@ export function spawningSystem(dt: number, level: DifficultyLevel) {
     if (timeSinceLastSpawn >= interval) {
       timeSinceLastSpawn = 0;
       const startX = CONFIG.screen.width + 20;
-      const pair = createPipePair(startX);
+      const pair = createPipePair(startX, gapSize);
       next = [...scoredCheck, pair];
     }
 

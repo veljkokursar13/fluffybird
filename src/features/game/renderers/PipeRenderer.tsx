@@ -64,14 +64,7 @@ export function PipeRenderer({ pipes }: PipeRendererProps) {
           pointerEvents: "none",
         }}
       >
-        {/* Debug/background body to ensure visibility even if image fails */}
-        <Rect
-          x={bodyX}
-          y={isTop ? 0 : adjustedCapH - seamOverlap}
-          width={width}
-          height={bodyHeight + seamOverlap}
-          color="rgba(60, 200, 90, 0.35)"
-        />
+        {/* Pipe body - use image or fallback rect */}
         {body ? (
           <SkiaImage
             image={body}

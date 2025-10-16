@@ -9,7 +9,7 @@ const birdSrc = require("@assets/images/birdmain.png");
 const wingsSrcDown = require("@assets/images/wingbottom.png");
 const wingsSrcUp = require("@assets/images/wingup.png");
 const wingsSrcCenter = require("@assets/images/wingcenterupper.png");
-
+ 
 type WingKey = "up" | "down" | "center" | "centerupper";
 
 // Centralized per-sprite layout; using the same positions/pivots for all
@@ -60,7 +60,7 @@ export default function BirdRenderer({ bird, jumpTick }: BirdRendererProps) {
     const map = (v: number, inMin: number, inMax: number, outMin: number, outMax: number) =>
       outMin + ((clamp(v, inMin, inMax) - inMin) * (outMax - outMin)) / (inMax - inMin);
     
-    const angle = map(bird.vel.y, -480, 480, -Math.PI / 6, Math.PI / 12);
+    const angle = map(bird.vel.y, -480, 480, -Math.PI / 6, Math.PI / 20);
     tilt.value = withTiming(angle, { duration: 120, easing: Easing.inOut(Easing.cubic) });
   }, [bird.vel.y, tilt]);
 

@@ -1,4 +1,3 @@
-//collision system goes here
 
 import type { PipePair } from "../entities/pipes";
 import { CONFIG } from "../config/settings";
@@ -47,7 +46,7 @@ export const collisionSystem = (
       };
       
       // Bottom pipe cap (top of bottom pipe)
-      const bottomCapRect = {
+      const bottomPipeCapRect: Rect = {
         x: pair.bottom.pos.x - (capWidth - pair.bottom.width) / 2,
         y: pair.bottom.pos.y,
         width: capWidth,
@@ -63,15 +62,16 @@ export const collisionSystem = (
       };
       
       // Top pipe cap (bottom of top pipe, rotated)
-      const topCapRect = {
+      const topPipeCapRect: Rect = {
         x: pair.top.pos.x - (capWidth - pair.top.width) / 2,
         y: pair.top.pos.y + pair.top.height - capHeight,
         width: capWidth,
         height: capHeight
       };
 
+
       // Check collisions - caps first for priority
-      if (intersects(bird, bottomCapRect) || intersects(bird, topCapRect)) {
+      if (intersects(bird, bottomPipeCapRect) || intersects(bird, topPipeCapRect)) {
         return collisionStates.CAP;
       }
       
@@ -82,7 +82,12 @@ export const collisionSystem = (
       if (intersects(bird, topPipeBodyRect)) {
         return collisionStates.TOP;
       }
+      if (intersects(bird, topPipeCapRect)) {
+        return collisionStates.CAP;
+      }
     }
+    
+
   }
   return null;
 };

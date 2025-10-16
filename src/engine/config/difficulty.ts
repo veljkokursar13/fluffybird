@@ -15,9 +15,9 @@ interface DifficultySettings {
 
 const difficultySettings: Record<DifficultyLevel, DifficultySettings> = {
   easy: {
-    pipeGapSize: CONFIG.pipe.maxGap,
-    pipeSpawnInterval: 2500,
-    pipeSpeedMultiplier: 0.8,
+    pipeGapSize: 400,
+    pipeSpawnInterval: 2800,
+    pipeSpeedMultiplier: 0.7,
     minPipeHeight: 100,
     maxPipeHeight: 300,
     spawnPattern: 'regular',
@@ -25,8 +25,8 @@ const difficultySettings: Record<DifficultyLevel, DifficultySettings> = {
     pipeVariation: 0.3
   },
   medium: {
-    pipeGapSize: CONFIG.pipe.maxGap * 0.8,
-    pipeSpawnInterval: 2000,
+    pipeGapSize: 300,
+    pipeSpawnInterval: 2200,
     pipeSpeedMultiplier: 1.0,
     minPipeHeight: 150,
     maxPipeHeight: 350,
@@ -35,9 +35,9 @@ const difficultySettings: Record<DifficultyLevel, DifficultySettings> = {
     pipeVariation: 0.5
   },
   hard: {
-    pipeGapSize: CONFIG.pipe.minGap,
-    pipeSpawnInterval: 1500,
-    pipeSpeedMultiplier: 1.2,
+    pipeGapSize: 200,
+    pipeSpawnInterval: 1600,
+    pipeSpeedMultiplier: 1.5,
     minPipeHeight: 200,
     maxPipeHeight: 400,
     spawnPattern: 'random',

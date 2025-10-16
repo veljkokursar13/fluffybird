@@ -1,5 +1,10 @@
 import { Asset } from 'expo-asset';
 
+const FONT_PRELOAD = [
+  require('@assets/fonts/fff-forward.regular.ttf'),
+  require('@assets/fonts/IrishGrover-Regular.ttf'),
+  require('@assets/fonts/PressStart2P-Regular.ttf'),
+];
 // All game assets centralized for preloading
 const GAME_ASSETS = [
   // Bird assets
@@ -18,6 +23,9 @@ const GAME_ASSETS = [
   require('@assets/images/sun.png'),
   require('@assets/images/bushes.png'),
   require('@assets/images/citybg.png'),
+  //menu page assets
+  require('@assets/images/bird-for-menu.png'),
+  require('@assets/images/city-background.png'),
 ];
 
 /**
