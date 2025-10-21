@@ -26,6 +26,9 @@ const GAME_ASSETS = [
   //menu page assets
   require('@assets/images/bird-for-menu.png'),
   require('@assets/images/city-background.png'),
+  //audio assets
+  
+
 ];
 
 /**

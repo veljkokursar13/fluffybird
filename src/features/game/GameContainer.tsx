@@ -5,7 +5,7 @@ import { WorldRenderer } from './renderers/WorldRenderer';
 
 import BirdRenderer from './renderers/BirdRenderer';
 import { useGameStore } from '../../store/gameStore';
-import { Pause } from 'lucide-react-native';
+import { Pause, Volume2, VolumeX } from 'lucide-react-native';
 import { useTicker } from '../../hooks/useTicker';
 import { CONFIG } from '../../engine/config/settings';
 // UI Overlays
@@ -17,12 +17,21 @@ import { PipeRenderer } from './renderers/PipeRenderer';
 import { spawningSystem, resetSpawnTimer } from '../../engine/systems/spawning';
 import type { DifficultyLevel } from '../../engine/config/difficulty';
 
+import { useSoundStore } from '@/src/sound/soundStore';
 export default function GameContainer() {
   const gameState = useGameStore((state) => state.gameState);
   const setGameState = useGameStore((state) => state.setGameState);
   const resetGame = useGameStore((state) => state.resetGame);
   const clearGameCache = useGameStore((state) => state.clearGameCache);
-  
+  const muted = useSoundStore((s) => s.muted);
+  const toggleMute = useSoundStore((s) => s.toggleMute);
+  const stopBgm = useSoundStore((s) => s.stopBgm);
+ 
+  // Stop any menu soundtrack when entering the game screen
+  useEffect(() => {
+    stopBgm();
+  }, [stopBgm]);
+ 
   // Clear game cache and reset spawn timer when game ends
   useEffect(() => {
     if (gameState === 'gameOver') {
@@ -43,12 +52,13 @@ export default function GameContainer() {
     }
   }, [gameState]);
 
-
-
   const handlePause = () => {
     setGameState('paused');
   };
   const handleTap = () => {
+    const soundStore = useSoundStore.getState();
+    soundStore.playSound('gameplaysound');
+
     const store = useGameStore.getState();
     if (gameState === 'menu') {
       setGameState('playing');
@@ -136,9 +146,11 @@ export default function GameContainer() {
         <View style={hudStyles.hud} pointerEvents="box-none">
           <ScoreDisplay />
           <View style={gameStyles.iconRow}>
-            {/* here will be placed icons once we put the sound settings in the game */}
             <TouchableOpacity onPress={handlePause} accessibilityLabel="Pause game" style={gameStyles.iconRight}>
-              <Pause size={24} color="#ffffff" />
+              <Pause size={30} color="#ffffff" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={toggleMute} accessibilityLabel="Toggle mute" style={gameStyles.iconRight}>
+              {muted ? <VolumeX size={30} color="#ffffff" /> : <Volume2 size={30} color="#ffffff" />}
             </TouchableOpacity>
           </View>
         </View>

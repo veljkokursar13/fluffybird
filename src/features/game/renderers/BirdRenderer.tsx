@@ -60,7 +60,7 @@ export default function BirdRenderer({ bird, jumpTick }: BirdRendererProps) {
     const map = (v: number, inMin: number, inMax: number, outMin: number, outMax: number) =>
       outMin + ((clamp(v, inMin, inMax) - inMin) * (outMax - outMin)) / (inMax - inMin);
     
-    const angle = map(bird.vel.y, -480, 480, -Math.PI / 6, Math.PI / 20);
+    const angle = map(bird.vel.y, -480, 480, -Math.PI / 6, Math.PI / 20); 
     tilt.value = withTiming(angle, { duration: 120, easing: Easing.inOut(Easing.cubic) });
   }, [bird.vel.y, tilt]);
 

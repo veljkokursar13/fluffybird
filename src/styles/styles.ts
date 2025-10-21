@@ -454,6 +454,7 @@ export const gameStyles = StyleSheet.create({
 
   iconRight: {
     marginLeft: 12,
+    paddingTop: 15,
   },
 
   iconText: {

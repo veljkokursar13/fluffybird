@@ -41,7 +41,7 @@ export function spawningSystem(dt: number, level: DifficultyLevel) {
       const pair = createPipePair(startX, gapSize);
       working = [pair];
       timeSinceLastSpawn = 0;
-    }
+  }
 
     // Increment score when a pipe pair fully passes the bird's center (once per pair)
     let scoreInc = 0;
