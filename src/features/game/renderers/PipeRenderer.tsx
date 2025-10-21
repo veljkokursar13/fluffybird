@@ -33,13 +33,14 @@ export function PipeRenderer({ pipes }: PipeRendererProps) {
     const bodyHeight = pipe.height;
 
     // Clamp cap sizes relative to body width
-    const capWClamped = Math.max(width, Math.min(Math.round(width * 1.4), Math.round(pipeCapWidth)));
-    const capHClamped = Math.max(Math.round(width * 0.4), Math.min(Math.round(width * 1.2), Math.round(pipeCapHeight)));
+    // Clamp relative to body to avoid visual popping on different assets
+    const capWClamped = Math.round(Math.max(width, Math.min(width * 1.25, pipeCapWidth)));
+    const capHClamped = Math.round(Math.max(width * 0.3, Math.min(width * 0.9, pipeCapHeight)));
 
     // Final sizes used for rendering
     const adjustedCapW = capWClamped;
     const adjustedCapH = capHClamped;
-    const seamOverlap = 1; // overlap body with cap by 1px to avoid gaps
+    const seamOverlap = 2; // slightly larger overlap to avoid seam gaps during scaling
 
     // Compute canvas width large enough to hold widest of body/cap, and center elements inside
     const canvasW = Math.max(width, adjustedCapW);
@@ -113,9 +114,9 @@ export function PipeRenderer({ pipes }: PipeRendererProps) {
   return (
     <>
       {pipes.map((pair, pairIdx) => (
-        <React.Fragment key={pairIdx}>
-          {renderPipe(pair.bottom, false, pairIdx, `bottom-${pairIdx}`)}
-          {renderPipe(pair.top, true, pairIdx, `top-${pairIdx}`)}
+        <React.Fragment key={pair.id ?? pairIdx}>
+          {renderPipe(pair.bottom, false, pairIdx, `bottom-${pair.id ?? pairIdx}`)}
+          {renderPipe(pair.top, true, pairIdx, `top-${pair.id ?? pairIdx}`)}
         </React.Fragment>
       ))}
     </>

@@ -99,8 +99,8 @@ function CloudSystem({
         if (c) pool.push(c);
       }
 
-      // nudge version to re-render ~30fps max
-      if (Math.random() < 0.5) setV((x) => x + 1);
+      // nudge version to re-render ~20fps (reduced for performance)
+      if (Math.random() < 0.33) setV((x) => x + 1);
 
       requestAnimationFrame(tick);
     };

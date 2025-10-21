@@ -18,6 +18,9 @@ import { spawningSystem, resetSpawnTimer } from '../../engine/systems/spawning';
 import type { DifficultyLevel } from '../../engine/config/difficulty';
 
 import { useSoundStore } from '@/src/sound/soundStore';
+
+const pipeContainerStyle = { position: 'absolute' as const, left: 0, top: 0, right: 0, bottom: 0, zIndex: 9 };
+
 export default function GameContainer() {
   const gameState = useGameStore((state) => state.gameState);
   const setGameState = useGameStore((state) => state.setGameState);
@@ -26,6 +29,7 @@ export default function GameContainer() {
   const muted = useSoundStore((s) => s.muted);
   const toggleMute = useSoundStore((s) => s.toggleMute);
   const stopBgm = useSoundStore((s) => s.stopBgm);
+  const playSound = useSoundStore((s) => s.playSound);
  
   // Stop any menu soundtrack when entering the game screen
   useEffect(() => {
@@ -56,8 +60,7 @@ export default function GameContainer() {
     setGameState('paused');
   };
   const handleTap = () => {
-    const soundStore = useSoundStore.getState();
-    soundStore.playSound('gameplaysound');
+    playSound('gameplaysound');
 
     const store = useGameStore.getState();
     if (gameState === 'menu') {
@@ -119,10 +122,13 @@ export default function GameContainer() {
     spawningSystem(dt, level);
 
     // Collision check against ground/ceiling and pipes (if any)
-    const birdRect = { x: current.pos.x, y: posY, width: current.size, height: current.size };
-    const hit = collisionSystem(birdRect, pipes, CONFIG.screen.floorY, 0);
-    if (hit) {
-      store.setGameOverState('gameOver');
+    // Skip collision if no pipes exist (performance optimization)
+    if (pipes.length > 0) {
+      const birdRect = { x: current.pos.x, y: posY, width: current.size, height: current.size };
+      const hit = collisionSystem(birdRect, pipes, CONFIG.screen.floorY, 0);
+      if (hit) {
+        store.setGameOverState('gameOver');
+      }
     }
 
 
@@ -132,7 +138,7 @@ export default function GameContainer() {
     <View style={[gameStyles.gameArea, StyleSheet.absoluteFillObject]}>
       <WorldRenderer moving={moving} />
       {/* Pipes should render above world layers, below HUD/overlays */}
-      <View style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, zIndex: 9 }} pointerEvents="none">
+      <View style={pipeContainerStyle} pointerEvents="none">
         <PipeRenderer pipes={pipesToRender} />
       </View>
 

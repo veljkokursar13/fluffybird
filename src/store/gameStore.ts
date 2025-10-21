@@ -93,17 +93,23 @@ export const useGameStore = create<GameStore>((set, get) => ({
     router.replace('/');
   },
   
-  updateBird: (birdUpdate: Partial<Bird>) => set((state) => ({
-    bird: { ...state.bird, ...birdUpdate },
-  })),
+  updateBird: (birdUpdate: Partial<Bird>) => set((state) => {
+    // Guard: prevent crashes if bird or update is invalid
+    if (!state.bird || !birdUpdate) return {};
+    return { bird: { ...state.bird, ...birdUpdate } };
+  }),
   
 
   
-  jump: () => set((state) => ({
-    bird: {
-      ...state.bird,
-      vel: { ...state.bird.vel, y: jumpBooster(CONFIG.physics.jumpVelocity) },
-    },
-    jumpTick: state.jumpTick + 1,
-  })),
+  jump: () => set((state) => {
+    // Guard: prevent crashes if bird is invalid
+    if (!state.bird?.vel) return {};
+    return {
+      bird: {
+        ...state.bird,
+        vel: { ...state.bird.vel, y: jumpBooster(CONFIG.physics.jumpVelocity) },
+      },
+      jumpTick: state.jumpTick + 1,
+    };
+  }),
 }));

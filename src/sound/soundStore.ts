@@ -52,8 +52,7 @@ export const useSoundStore = create<SoundState>((set, get) => ({
 
         const loaded: Partial<LoadedSounds> = {};
         (Object.keys(sources) as SoundNames[]).forEach((name) => {
-            const isSfx = name !== 'fluffy-soundtrack';
-            const player = createAudioPlayer(sources[name] as AudioSource, isSfx ? { keepAudioSessionActive: true } : undefined);
+            const player = createAudioPlayer(sources[name] as AudioSource);
             player.loop = false;
             player.muted = get().muted;
             player.volume = name === 'fluffy-soundtrack' ? get().bgmVolume : get().sfxVolume;
@@ -88,15 +87,19 @@ export const useSoundStore = create<SoundState>((set, get) => ({
 
     playSound: (name: SoundNames) => {
         const player = get().sounds[name];
-        if (!player) return;
+        if (!player || !player.isLoaded) return;
+        
+        // Fast restart: replace source instead of pause+seek for better perf
         player.loop = false;
-        if (player.playing) {
-            player.pause();
+        try {
+            player.replace(sources[name]);
+            player.play();
+        } catch (e) {
+            // Fallback: pause and seek if replace fails
+            if (player.playing) player.pause();
+            player.seekTo(0);
+            player.play();
         }
-        player.seekTo(0);
-        player.volume = name === 'fluffy-soundtrack' ? get().bgmVolume : get().sfxVolume;
-        player.muted = get().muted;
-        player.play();
     },
 
     playBgm: (name: SoundNames) => {

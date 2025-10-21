@@ -9,11 +9,13 @@ export interface Pipe {
 }
 
 export interface PipePair {
+  id: number;
   bottom: Pipe;
   top: Pipe;
   scored?: boolean; // whether this pipe pair has already contributed to the score
   gap: number; // gap size between top and bottom pipes
 }
+let PIPE_ID = 1;
 
 // Safe config reads with fallbacks
 const PIPE_WIDTH = CONFIG.pipe?.width ?? 50;
@@ -42,6 +44,7 @@ export function createPipePair(x: number, gapSize?: number, gapCenter?: number):
   const topPipeHeight = topPipeBottom;
   
   return {
+    id: PIPE_ID++,
     bottom: {
       pos: { x, y: bottomPipeTop },
       width: PIPE_WIDTH,
