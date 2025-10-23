@@ -1,6 +1,6 @@
 import { CONFIG } from './settings';
 
-export type DifficultyLevel = 'easy' | 'medium' | 'hard';
+export type DifficultyLevel = 'easy' |'easyMedium'| 'medium' |'mediumHard'|  'hard';
 
 interface DifficultySettings {
   pipeGapSize: number;
@@ -15,29 +15,49 @@ interface DifficultySettings {
 
 const difficultySettings: Record<DifficultyLevel, DifficultySettings> = {
   easy: {
-    pipeGapSize: 280,
+    pipeGapSize: 260,
     pipeSpawnInterval: 2800,
-    pipeSpeedMultiplier: 0.5,
+    pipeSpeedMultiplier: 0.55,
     minPipeHeight: 100,
     maxPipeHeight: 300,
     spawnPattern: 'regular',
     randomSpawnChance: 1,
     pipeVariation: 0.3
   },
+  easyMedium:{
+    pipeGapSize: 230,
+    pipeSpawnInterval: 2500,
+    pipeSpeedMultiplier: 0.65,
+    minPipeHeight: 120,
+    maxPipeHeight: 320,
+    spawnPattern: 'regular',
+    randomSpawnChance: 0.95,
+    pipeVariation: 0.4,
+  },
   medium: {
-    pipeGapSize: 220,
-    pipeSpawnInterval: 2200,
-    pipeSpeedMultiplier: 0.7,
+    pipeGapSize: 200,
+    pipeSpawnInterval: 2000,
+    pipeSpeedMultiplier: 0.75,
     minPipeHeight: 150,
     maxPipeHeight: 350,
     spawnPattern: 'alternating',
     randomSpawnChance: 0.9,
     pipeVariation: 0.5,
   },
-  hard: {
+  mediumHard:{
     pipeGapSize: 180,
     pipeSpawnInterval: 1800,
-    pipeSpeedMultiplier: 1,
+    pipeSpeedMultiplier: 0.9,
+    minPipeHeight: 170,
+    maxPipeHeight: 370,
+    spawnPattern: 'random',
+    randomSpawnChance: 0.85,
+    pipeVariation: 0.6,
+  },
+  hard: {
+    pipeGapSize: 160,
+    pipeSpawnInterval: 1800,
+    pipeSpeedMultiplier: 1.05,
     minPipeHeight: 180,
     maxPipeHeight: 380,
     spawnPattern: 'random',
@@ -60,10 +80,16 @@ class DifficultyManager {
   }
 
   private adjustDifficultyByScore() {
-    if (this.score >= 50) {
+    if (this.score >= 55) {
       this.currentLevel = 'hard';
-    } else if (this.score >= 20) {
+    } else if (this.score >= 35) {
+      this.currentLevel = 'mediumHard';
+    } else if (this.score >= 18) {
       this.currentLevel = 'medium';
+    } else if (this.score >= 8) {
+      this.currentLevel = 'easyMedium';
+    } else {
+      this.currentLevel = 'easy';
     }
   }
 
@@ -93,6 +119,14 @@ class DifficultyManager {
 
 const manager = new DifficultyManager();
 export default manager;
+
+export function getLevelForScore(score: number): DifficultyLevel {
+  if (score >= 55) return 'hard';
+  if (score >= 35) return 'mediumHard';
+  if (score >= 18) return 'medium';
+  if (score >= 8) return 'easyMedium';
+  return 'easy';
+}
 
 // Convenience API expected by spawning system: level-in, value-out
 export const difficultySetting = {
@@ -136,7 +170,7 @@ export const difficultySetting = {
     return manager.settings.pipeVariation;
   },
 };
-
+ 
 // Adaptive difficulty wrapper with basic death-based adjustments
 export class AdaptiveDifficulty {
   private manager: DifficultyManager;

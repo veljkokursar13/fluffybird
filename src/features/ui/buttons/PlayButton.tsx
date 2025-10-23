@@ -4,9 +4,11 @@ interface PlayButtonProps {
   onPress: () => void;
   title?: string;
   disabled?: boolean;
+  size?: 'default' | 'compact';
 }
 
-export default function PlayButton({ onPress, title = 'Play', disabled = false }: PlayButtonProps) {
+export default function PlayButton({ onPress, title = 'Play', disabled = false, size = 'default' }: PlayButtonProps) {
+  const isCompact = size === 'compact';
   return (
     <Pressable
       style={({ pressed }) => [
@@ -17,7 +19,7 @@ export default function PlayButton({ onPress, title = 'Play', disabled = false }
       disabled={disabled}
     >
       {({ pressed }) => (
-        <View style={PlayButtonStyles.wrapper}>
+        <View style={[PlayButtonStyles.wrapper, isCompact && PlayButtonStyles.wrapperCompact]}>
           <View
             style={[
               PlayButtonStyles.shadowLayer,
@@ -28,10 +30,11 @@ export default function PlayButton({ onPress, title = 'Play', disabled = false }
             style={[
               PlayButtonStyles.buttonFace,
               pressed && PlayButtonStyles.buttonFacePressed,
+              isCompact && PlayButtonStyles.buttonFaceCompact,
             ]}
           >
             <View style={PlayButtonStyles.gloss} />
-            <Text style={PlayButtonStyles.primaryButtonText}>{title}</Text>
+            <Text style={[PlayButtonStyles.primaryButtonText, isCompact && PlayButtonStyles.primaryButtonTextCompact]}>{title}</Text>
           </View>
         </View>
       )}
@@ -45,7 +48,10 @@ const PlayButtonStyles = StyleSheet.create({
   },
   wrapper: {
     position: 'relative',
-    minWidth: 160,
+    width: 200,
+  },
+  wrapperCompact: {
+    minWidth: 120,
   },
   shadowLayer: {
     position: 'absolute',
@@ -65,6 +71,7 @@ const PlayButtonStyles = StyleSheet.create({
     paddingHorizontal: 28,
     paddingVertical: 14,
     borderRadius: 8,
+    width: '100%',
     borderWidth: 2,
     borderTopColor: '#fff4a8',
     borderLeftColor: '#fff4a8',
@@ -77,6 +84,10 @@ const PlayButtonStyles = StyleSheet.create({
     elevation: 4,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  buttonFaceCompact: {
+    paddingHorizontal: 18,
+    paddingVertical: 10,
   },
   buttonFacePressed: {
     backgroundColor: '#eecf17',
@@ -101,5 +112,8 @@ const PlayButtonStyles = StyleSheet.create({
     color: '#0b1020',
     textAlign: 'center',
     fontFamily: 'fff-forward.regular',
+  },
+  primaryButtonTextCompact: {
+    fontSize: 16,
   },
 });

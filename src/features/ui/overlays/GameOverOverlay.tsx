@@ -31,18 +31,16 @@ export default function GameOverOverlay() {
     <View style={overlayStyles.overlay}>
       <BlurView intensity={50} tint="dark" style={StyleSheet.absoluteFill} />
 
-      <View style={overlayStyles.modal}>
-        <Text style={[overlayStyles.modalTitle, GameOverLocalStyles.title]}>Game Over</Text>
-        <View style={overlayStyles.modalContent}>
+      <View style={GameOverLocalStyles.layoutContainer}>
+        <Text style={GameOverLocalStyles.title}>Game Over</Text>
+        
+        <View style={GameOverLocalStyles.scoreCenter}>
           <BestScoreDisplay bestScore={bestScore} currentScore={score} />
         </View>
-        <View style={[overlayStyles.verticalButtonContainer, GameOverLocalStyles.buttonStack]}>
-          <View style={GameOverLocalStyles.buttonItem}>
-            <RestartButton onPress={handleRestart} title="Play Again" />
-          </View>
-          <View style={GameOverLocalStyles.buttonItem}>
-            <PlayButton onPress={handleMenu} title="Back to Menu" />
-          </View>
+        
+        <View style={GameOverLocalStyles.buttonsBottom}>
+          <RestartButton onPress={handleRestart} title="Play Again" />
+          <PlayButton onPress={handleMenu} title="Back to Menu" />
         </View>
       </View>
     </View>
@@ -50,17 +48,31 @@ export default function GameOverOverlay() {
 }
 
 const GameOverLocalStyles = StyleSheet.create({
+  layoutContainer: {
+    flex: 1,
+    width: '100%',
+    paddingHorizontal: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   title: {
+    fontSize: 48,
+    fontWeight: '700',
+    color: '#FFFFFF',
     textAlign: 'center',
-    alignSelf: 'stretch',
+    fontFamily: 'fff-forward.regular',
+    marginTop: 0,
+    marginBottom: 12,
   },
-  buttonStack: {
-    alignSelf: 'center',
+  scoreCenter: {
+    flexGrow: 0,
+    justifyContent: 'center',
     alignItems: 'center',
-    width: '100%',
   },
-  buttonItem: {
-    width: '100%',
+  buttonsBottom: {
+    marginTop: 16,
+    gap: 14,
     alignItems: 'center',
+    transform: [{ scale: 0.85 }],
   },
 });

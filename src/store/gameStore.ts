@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { CONFIG } from '../engine/config/settings';
 import { router } from 'expo-router';
-import { Bird, jumpBooster } from '../engine/entities/bird';
+import { Bird, jumpBooster, resetCombo } from '../engine/entities/bird';
 import { PipePair } from '../engine/entities/pipes';
 
 
@@ -73,20 +73,26 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }));
   },
   
-  resetGame: () => set({
-    gameState: 'menu',
-    score: 0,
-    bird: { ...initialBird },
-    pipes: [],
-    jumpTick: 0,
-  }),
+  resetGame: () => {
+    resetCombo(); // Reset jump combo counter
+    set({
+      gameState: 'menu',
+      score: 0,
+      bird: { ...initialBird },
+      pipes: [],
+      jumpTick: 0,
+    });
+  },
   
   // Clear all game cache (bird, pipes, score, jumpTick) but preserve bestScore
-  clearGameCache: () => set({
-    bird: { ...initialBird },
-    pipes: [],
-    jumpTick: 0,
-  }),
+  clearGameCache: () => {
+    resetCombo(); // Reset jump combo counter
+    set({
+      bird: { ...initialBird },
+      pipes: [],
+      jumpTick: 0,
+    });
+  },
   
   backToMenu: () => {
     set({ gameState: 'menu' });

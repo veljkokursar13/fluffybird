@@ -20,64 +20,57 @@ export interface Bird {
 
 export type BirdUpdate = Partial<Bird>;
 
-let consecutiveFlaps = 0;
-let lastFlapTime = 0;
-// Separate counters for jump booster based on consecutive taps
+// Consolidated jump booster: tracks consecutive taps and applies multiplier
 let consecutiveTaps = 0;
 let lastTapTime = 0;
 
-// Bird flapping logic with jump boost mechanics
-export function flap(bird: Bird): Bird {
-  const now = Date.now();
-  const timeSinceLastFlap = now - lastFlapTime;
-  
-  // Reset consecutive flaps if too much time has passed
-  if (timeSinceLastFlap > 300) { // Reset after 300ms
-    consecutiveFlaps = 0;
-  }
-  
-  // Increment consecutive flaps
-  consecutiveFlaps = Math.min(consecutiveFlaps + 1, 3);
-  lastFlapTime = now;
-
-  // Calculate boosted velocity
-  const baseVelocity = CONFIG.bird.flapVelocity;
-  const boostMultiplier = getBoostMultiplier(consecutiveFlaps);
-  const boostedVelocity = baseVelocity * boostMultiplier;
-
-  return {
-    ...bird,
-    vel: { x: bird.vel.x, y: boostedVelocity },
-  };
-}
-
-// Helper function to calculate boost multiplier based on consecutive flaps
-function getBoostMultiplier(flaps: number): number {
-  switch (flaps) {
-    case 1: return 1.0;    // Normal jump
-    case 2: return 1.1;    // Small boost
-    case 3: return 1.2;    // Maximum boost
-    default: return 1.0;
-  }
-}
-// Applies a dynamic boost to jump velocity based on rapid consecutive taps
-// Resets if the gap between taps exceeds the threshold
+/**
+ * Applies a dynamic boost to jump velocity based on rapid consecutive taps.
+ * Resets combo chain if gap between taps exceeds 300ms.
+ * 
+ * @param velocity - Base jump velocity
+ * @returns Boosted velocity with multiplier applied
+ * 
+ * Multipliers:
+ * - 1-1 taps: 1.0x (normal)
+ * - 2-4 taps: 1.1x (small boost)
+ * - 5-9 taps: 1.2x (medium boost)
+ * - 10+ taps: 1.3x (max boost)
+ */
 export function jumpBooster(velocity: number): number {
   const now = Date.now();
   const delta = now - lastTapTime;
-  // Reset chain if time since last tap is too long
+  
+  // Reset combo chain if time since last tap is too long
   if (delta > 300) {
     consecutiveTaps = 0;
   }
-  consecutiveTaps = Math.min(consecutiveTaps + 1, 50); // prevent unbounded growth
+  
+  consecutiveTaps = Math.min(consecutiveTaps + 1, 50); // Cap to prevent unbounded growth
   lastTapTime = now;
 
+  // Calculate boost multiplier based on combo count
   let multiplier = 1.0;
-  if (consecutiveTaps > 1 && consecutiveTaps < 5) multiplier = 1.1;
+  if (consecutiveTaps >= 2 && consecutiveTaps < 5) multiplier = 1.1;
   else if (consecutiveTaps >= 5 && consecutiveTaps < 10) multiplier = 1.2;
   else if (consecutiveTaps >= 10) multiplier = 1.3;
 
   return velocity * multiplier;
+}
+
+/**
+ * Returns the current combo count (for UI/debug purposes)
+ */
+export function getComboCount(): number {
+  return consecutiveTaps;
+}
+
+/**
+ * Resets the jump combo counter (call on game reset)
+ */
+export function resetCombo(): void {
+  consecutiveTaps = 0;
+  lastTapTime = 0;
 }
 
 

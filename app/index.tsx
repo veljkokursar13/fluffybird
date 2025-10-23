@@ -11,6 +11,7 @@ import { Volume2, VolumeX } from 'lucide-react-native'
 import { useSoundStore } from '@src/sound/soundStore'
 import { useState, useEffect } from 'react'
 import { Asset } from 'expo-asset'
+// import Banner from '@src/features/ui/ads/Banner' // TODO: Restore when ready for production
 
 //preload images
 
@@ -158,6 +159,7 @@ export default function MenuScreen() {
         <View style={gameStyles.menuButtonContainer}>
           <PlayButton onPress={handleStartGame} title="Start Game" />
         </View>
+        {/* <Banner /> */} {/* TODO: Restore when ready for production */}
       </ImageBackground>
   )
 }

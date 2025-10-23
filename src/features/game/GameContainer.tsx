@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { View, Pressable, TouchableOpacity, StyleSheet } from 'react-native';
 import { gameStyles, hudStyles } from '../../styles/styles';
 import { WorldRenderer } from './renderers/WorldRenderer';  
 
@@ -12,12 +12,16 @@ import { CONFIG } from '../../engine/config/settings';
 import GameOverOverlay from '../ui/overlays/GameOverOverlay';
 import PauseOverlay from '../ui/overlays/PauseOverlay';
 import ScoreDisplay from '../ui/common/ScoreDisplay';
+import TapToPlayOverlay from '../ui/overlays/TapToPlayOverlay';
 import { collisionSystem } from '../../engine/systems/collision';
 import { PipeRenderer } from './renderers/PipeRenderer';
 import { spawningSystem, resetSpawnTimer } from '../../engine/systems/spawning';
 import type { DifficultyLevel } from '../../engine/config/difficulty';
+import { getLevelForScore } from '../../engine/config/difficulty';
 
 import { useSoundStore } from '@/src/sound/soundStore';
+
+
 
 const pipeContainerStyle = { position: 'absolute' as const, left: 0, top: 0, right: 0, bottom: 0, zIndex: 9 };
 
@@ -60,19 +64,28 @@ export default function GameContainer() {
     setGameState('paused');
   };
   const handleTap = () => {
-    playSound('gameplaysound');
-
     const store = useGameStore.getState();
-    if (gameState === 'menu') {
+    const currentState = store.gameState;
+    playSound('gameplaysound');
+    if (currentState === 'menu') {
       setGameState('playing');
       // next frame to ensure state transition is reflected
       requestAnimationFrame(() => store.jump());
       return;
     }
-    if (gameState === 'playing') {
+    if (currentState === 'playing') {
       store.jump();
       return;
     }
+  };
+
+  // Guard against missed/duplicate taps across platforms
+  const lastTapRef = useRef(0);
+  const handleTapSafe = () => {
+    const now = Date.now();
+    if (now - lastTapRef.current < 120) return;
+    lastTapRef.current = now;
+    handleTap();
   };
 
   const bird = useGameStore((state) => state.bird);
@@ -114,10 +127,8 @@ export default function GameContainer() {
       vel: { x: current.vel.x, y: velY },
     });
 
-    // Difficulty based on score thresholds
-    let level: DifficultyLevel = 'easy';
-    if (score >= 50) level = 'hard';
-    else if (score >= 20) level = 'medium';
+    // Difficulty based on score thresholds (five levels)
+    const level: DifficultyLevel = getLevelForScore(score);
     // Spawn/move pipes according to difficulty
     spawningSystem(dt, level);
 
@@ -146,7 +157,7 @@ export default function GameContainer() {
       <BirdRenderer bird={bird} jumpTick={jumpTick} />
 
       {/* Full-screen tap layer (does not cover HUD/overlays visually) */}
-      <TouchableOpacity onPress={handleTap} activeOpacity={1} style={gameStyles.tapCatcher} />
+      <Pressable onPress={handleTapSafe} style={gameStyles.tapCatcher} />
       {/* HUD while playing */}
       {gameState === 'playing' && (
         <View style={hudStyles.hud} pointerEvents="box-none">
@@ -161,7 +172,8 @@ export default function GameContainer() {
           </View>
         </View>
       )}
-      
+      {/* Tap-to-play overlay on initial game entry */}
+      <TapToPlayOverlay />
       {/* Overlays always mounted above game area */}
       {gameState === 'paused' && <PauseOverlay />}
       {gameState === 'gameOver' && <GameOverOverlay />}

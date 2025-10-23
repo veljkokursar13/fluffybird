@@ -39,12 +39,14 @@ export default function PauseOverlay() {
     <View style={overlayStyles.overlay}>
       <BlurView intensity={50} tint="dark" style={StyleSheet.absoluteFill} />
      
-      <View style={overlayStyles.modal}>
-        <Text style={[overlayStyles.modalTitle, PauseOverlayLocalStyles.title]}>Paused</Text>
-        <View style={overlayStyles.modalContent}>
+      <View style={PauseOverlayLocalStyles.layoutContainer}>
+        <Text style={PauseOverlayLocalStyles.title}>Paused</Text>
+        
+        <View style={PauseOverlayLocalStyles.scoreCenter}>
           <BestScoreDisplay bestScore={bestScore} currentScore={score} />
         </View>
-        <View style={overlayStyles.verticalButtonContainer}>
+        
+        <View style={PauseOverlayLocalStyles.buttonsBottom}>
           <PlayButton onPress={handleResume} title="Resume" />
           <RestartButton onPress={handleRestart} title="Restart" />
           <PlayButton onPress={handleMenu} title="Back to Menu" />
@@ -55,8 +57,31 @@ export default function PauseOverlay() {
 }
 
 const PauseOverlayLocalStyles = StyleSheet.create({
+  layoutContainer: {
+    flex: 1,
+    width: '100%',
+    paddingHorizontal: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   title: {
+    fontSize: 48,
+    fontWeight: '700',
+    color: '#FFFFFF',
     textAlign: 'center',
-    alignSelf: 'stretch',
+    fontFamily: 'fff-forward.regular',
+    marginTop: 0,
+    marginBottom: 12,
+  },
+  scoreCenter: {
+    flexGrow: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonsBottom: {
+    marginTop: 16,
+    gap: 14,
+    alignItems: 'center',
+    transform: [{ scale: 0.85 }],
   },
 });

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+ import React, { useEffect, useRef, useState } from "react";
 import { Canvas, Image as SkImage, useImage } from "@shopify/react-native-skia";
 
 type Cloud = {

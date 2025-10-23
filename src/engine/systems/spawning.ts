@@ -7,9 +7,15 @@ import { difficultySetting, DifficultyLevel } from "../config/difficulty";
 let timeSinceLastSpawn = 0;
 let nextSpawnIntervalMs: number | null = null; // sampled per spawn window
 const MAX_PIPES_ON_SCREEN = 6; // hard cap to avoid runaway growth
+// Track previous gap characteristics to create smooth variation
+let lastGapCenter: number | null = null;
+let lastGapSize: number | null = null;
 
 export function resetSpawnTimer() {
   timeSinceLastSpawn = 0;
+  nextSpawnIntervalMs = null;
+  lastGapCenter = null;
+  lastGapSize = null;
 }
 
 export function spawningSystem(dt: number, level: DifficultyLevel) {
@@ -44,8 +50,17 @@ export function spawningSystem(dt: number, level: DifficultyLevel) {
     if (working.length === 0 && state.gameState === 'playing') {
       const startX = CONFIG.screen.width + 20;
       // Sample gap only when spawning
-      const initialGap = difficultySetting.getPipeGap(level);
+      const baseGap = difficultySetting.getPipeGap(level);
+      const variation = difficultySetting.getPipeVariation(level);
+      const spanPx = Math.max(40, (CONFIG.pipe.maxGap - CONFIG.pipe.minGap) * 0.25);
+      const initialGap = Math.max(
+        CONFIG.pipe.minGap,
+        Math.min(CONFIG.pipe.maxGap, Math.round(baseGap + (Math.random() * 2 - 1) * spanPx * variation))
+      );
       const pair = createPipePair(startX, initialGap);
+      // Derive and store initial center for smoother subsequent spawns
+      lastGapSize = pair.gap;
+      lastGapCenter = pair.bottom.pos.y - pair.gap / 2;
       working = [pair];
       timeSinceLastSpawn = 0;
   }
@@ -80,10 +95,38 @@ export function spawningSystem(dt: number, level: DifficultyLevel) {
 
       if (shouldSpawn) {
         // Sample gap size only now to avoid per-frame randomness
-        const gapSize = difficultySetting.getPipeGap(level);
+        const baseGap = difficultySetting.getPipeGap(level);
+        const variation = difficultySetting.getPipeVariation(level);
+        const spanPx = Math.max(40, (CONFIG.pipe.maxGap - CONFIG.pipe.minGap) * 0.25);
+        // Vary gap within safe bounds based on difficulty variation
+        let gapSize = Math.round(baseGap + (Math.random() * 2 - 1) * spanPx * variation);
+        gapSize = Math.max(CONFIG.pipe.minGap, Math.min(CONFIG.pipe.maxGap, gapSize));
+
+        // Compute next gap center with limited vertical step to keep flow fair
+        const floorY = CONFIG.screen.floorY;
+        const minCenter = gapSize / 2 + 50;
+        const maxCenter = floorY - gapSize / 2 - 50;
+        const maxStep = 110 * (0.6 + 0.4 * variation); // px per spawn window
+        let proposedCenter =
+          lastGapCenter == null
+            ? (minCenter + Math.random() * (maxCenter - minCenter))
+            : lastGapCenter + (Math.random() * 2 - 1) * maxStep;
+        // Clamp within playable bounds
+        proposedCenter = Math.max(minCenter, Math.min(maxCenter, proposedCenter));
+
+        // Avoid back-to-back extreme flips (top extreme to bottom extreme)
+        const isPrevTopExtreme = lastGapCenter != null && (lastGapCenter - minCenter) < 28;
+        const isPrevBottomExtreme = lastGapCenter != null && (maxCenter - lastGapCenter) < 28;
+        const isNextTopExtreme = (proposedCenter - minCenter) < 28;
+        const isNextBottomExtreme = (maxCenter - proposedCenter) < 28;
+        if ((isPrevTopExtreme && isNextBottomExtreme) || (isPrevBottomExtreme && isNextTopExtreme)) {
+          proposedCenter = (minCenter + maxCenter) / 2;
+        }
         // Enforce a safe cap on visible pipe pairs
         if (scoredCheck.length < MAX_PIPES_ON_SCREEN) {
-          const pair = createPipePair(startX, gapSize);
+          const pair = createPipePair(startX, gapSize, proposedCenter);
+          lastGapSize = pair.gap;
+          lastGapCenter = proposedCenter;
           next = [...scoredCheck, pair];
         } else {
           next = scoredCheck;

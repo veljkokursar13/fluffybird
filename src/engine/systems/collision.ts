@@ -5,9 +5,10 @@ import { CONFIG } from "../config/settings";
 type Rect = { x: number; y: number; width: number; height: number; };
 
 export const collisionStates = {
-  CAP: 'cap',
-  TOP: 'top',
-  BOTTOM: 'bottom',
+ TOP_CAP:  'TOP_CAP',
+ BOTTOM_CAP: 'BOTTOM_CAP',
+  TOP: 'TOP',
+  BOTTOM: 'BOTTOM',
 } as const;
 
 type CollisionState = typeof collisionStates[keyof typeof collisionStates] | null;
@@ -72,17 +73,18 @@ export const collisionSystem = (
       };
 
 
-      // Check collisions - caps first for priority
-      if (intersects(bird, bottomPipeCapRect) || intersects(bird, topPipeCapRect)) {
-        return collisionStates.CAP;
-      }
-      
       if (intersects(bird, bottomPipeBodyRect)) {
         return collisionStates.BOTTOM;
       }
       
       if (intersects(bird, topPipeBodyRect)) {
         return collisionStates.TOP;
+      }
+      if (intersects(bird, topPipeCapRect)) {
+        return collisionStates.TOP_CAP;
+      }
+      if (intersects(bird, bottomPipeCapRect)) {
+        return collisionStates.BOTTOM_CAP;
       }
     }
   }
