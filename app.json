@@ -2,6 +2,8 @@
   "expo": {
     "name": "fluffybird",
     "slug": "fluffybird",
+    "plugins": [
+    ],
     "scheme": "fluffybird",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -12,7 +14,8 @@
     },
     "android": {
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.fluffybird"
     },
     "extra": {}
   }

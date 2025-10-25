@@ -25,13 +25,12 @@ type Config = {
     width: number;
     speed: number;
     height: number;
-    pipeCap: number;
+    pipeCapHeight: number;
+    pipeCapWidth: number;
     minGap: number;
     maxGap: number;
     minSpacing: number;
     maxSpacing: number;
-    capWidth: number;
-    capHeight: number;
   };
 };
 
@@ -40,7 +39,7 @@ const { width, height } = Dimensions.get('window');
 export const CONFIG: Readonly<Config> = {
   screen: { width, height, floorY: height - 100 },
   bird: {
-    size: 48,
+    size: 48 *0.8,
     startX: Math.round(width * 0.25),
     startY: Math.round(height * 0.5),
     radius: Math.round(width * 0.05),
@@ -55,18 +54,17 @@ export const CONFIG: Readonly<Config> = {
     dt: 1 / 60,
   },
   pipe: {
-    width: 80,
+    width: 64 *0.7,
     speed: 240,
     height: 400, // Individual pipe segment height
 
     // Gap between top and bottom pipe in a pair
-    pipeCap: 180,
-    minGap: 120,
-    maxGap: 180,
+    pipeCapHeight: 54 *0.6,
+    pipeCapWidth: 120 *0.7,
+    minGap: 300,
+    maxGap: 500,
     minSpacing: 200,
     maxSpacing: 300,
-    capWidth: 100,
-    capHeight: 50,
   },
 };
 
@@ -83,5 +81,5 @@ export const PIPE_WIDTH = CONFIG.pipe.width;
 export const PIPE_SPEED = CONFIG.pipe.speed;
 export const GROUND_HEIGHT = CONFIG.screen.floorY;
 export const FPS = 1 / 60; 
-export const PIPE_CAP_WIDTH = CONFIG.pipe.capWidth;
-export const PIPE_CAP_HEIGHT = CONFIG.pipe.capHeight;
+export const PIPE_CAP_WIDTH = CONFIG.pipe.pipeCapWidth;
+export const PIPE_CAP_HEIGHT = CONFIG.pipe.pipeCapHeight;

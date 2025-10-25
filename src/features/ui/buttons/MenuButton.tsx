@@ -1,40 +1,40 @@
 import { Text, Pressable, StyleSheet, View } from 'react-native';
 
-interface PlayButtonProps {
+interface MenuButtonProps {
   onPress: () => void;
   title?: string;
   disabled?: boolean;
   size?: 'default' | 'compact';
 }
 
-export default function PlayButton({ onPress, title = 'Play', disabled = false, size = 'default' }: PlayButtonProps) {
+export default function MenuButton({ onPress, title = 'Menu', disabled = false, size = 'default' }: MenuButtonProps) {
   const isCompact = size === 'compact';
   return (
     <Pressable
       style={({ pressed }) => [
-        PlayButtonStyles.pressableArea,
+        MenuButtonStyles.pressableArea,
         disabled && { opacity: 0.7 },
       ]}
       onPress={onPress}
       disabled={disabled}
     >
       {({ pressed }) => (
-        <View style={[PlayButtonStyles.wrapper, isCompact && PlayButtonStyles.wrapperCompact]}>
+        <View style={[MenuButtonStyles.wrapper, isCompact && MenuButtonStyles.wrapperCompact]}>
           <View
             style={[
-              PlayButtonStyles.shadowLayer,
-              pressed && PlayButtonStyles.shadowLayerPressed,
+              MenuButtonStyles.shadowLayer,
+              pressed && MenuButtonStyles.shadowLayerPressed,
             ]}
           />
           <View
             style={[
-              PlayButtonStyles.buttonFace,
-              pressed && PlayButtonStyles.buttonFacePressed,
-              isCompact && PlayButtonStyles.buttonFaceCompact,
+              MenuButtonStyles.buttonFace,
+              pressed && MenuButtonStyles.buttonFacePressed,
+              isCompact && MenuButtonStyles.buttonFaceCompact,
             ]}
           >
-            <View style={PlayButtonStyles.gloss} />
-            <Text style={[PlayButtonStyles.primaryButtonText, isCompact && PlayButtonStyles.primaryButtonTextCompact]}>{title}</Text>
+            <View style={MenuButtonStyles.gloss} />
+            <Text style={[MenuButtonStyles.primaryButtonText, isCompact && MenuButtonStyles.primaryButtonTextCompact]}>{title}</Text>
           </View>
         </View>
       )}
@@ -42,16 +42,16 @@ export default function PlayButton({ onPress, title = 'Play', disabled = false, 
   );
 }
 
-const PlayButtonStyles = StyleSheet.create({
+const MenuButtonStyles = StyleSheet.create({
   pressableArea: {
     alignSelf: 'center',
   },
   wrapper: {
     position: 'relative',
-    width: 200,
+    width: 230,
   },
   wrapperCompact: {
-    minWidth: 120,
+    minWidth: 140,
   },
   shadowLayer: {
     position: 'absolute',

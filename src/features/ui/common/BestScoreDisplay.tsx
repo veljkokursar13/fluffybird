@@ -1,5 +1,4 @@
-import { View, Text } from 'react-native';
-import { hudStyles } from '../../../styles/styles';
+import { View, Text, StyleSheet } from 'react-native';
 
 interface BestScoreDisplayProps {
   bestScore: number;
@@ -10,9 +9,23 @@ export default function BestScoreDisplay({ bestScore, currentScore }: BestScoreD
   const isNewBest = currentScore > bestScore;
   
   return (
-    <View>
-      <Text style={hudStyles.scoreText}>Score: {currentScore}</Text>
-      <Text style={[hudStyles.scoreText, isNewBest && { color: '#FFD700', fontWeight: '700' }]}>Best: {bestScore}</Text>
+    <View style={styles.container}>
+      <Text style={styles.scoreText}>Score: {currentScore}</Text>
+      <Text style={[styles.scoreText, isNewBest && { color: '#FFD700' }]}>Best: {bestScore}</Text>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    gap: 4,
+  },
+  scoreText: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    fontFamily: 'PressStart2P-Regular',
+    textAlign: 'center',
+  },
+});

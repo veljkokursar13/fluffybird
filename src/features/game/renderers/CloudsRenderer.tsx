@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+ import React, { useEffect, useRef, useState } from "react";
 import { Canvas, Image as SkImage, useImage } from "@shopify/react-native-skia";
 
 type Cloud = {
@@ -37,9 +37,15 @@ function CloudSystem({
   const imgLarge = useImage(require("@assets/images/cloudnew.png"));
   const imgMed   = useImage(require("@assets/images/cloudmedium.png"));
 
-  // internal pool and a “version” to trigger re-render
+  // internal pool and a "version" to trigger re-render
   const poolRef = useRef<Cloud[]>([]);
+  const movingRef = useRef(moving);
   const [v, setV] = useState(0);
+
+  // Keep movingRef in sync with prop
+  useEffect(() => {
+    movingRef.current = moving;
+  }, [moving]);
 
   // prewarm: a couple visible; rest off-screen to the right
   useEffect(() => {
@@ -72,7 +78,7 @@ function CloudSystem({
 
       const pool = poolRef.current;
 
-      if (moving) {
+      if (movingRef.current) {
         // move right-to-left
         for (const c of pool) {
           c.x -= c.speed * dt;
@@ -93,8 +99,8 @@ function CloudSystem({
         if (c) pool.push(c);
       }
 
-      // nudge version to re-render ~30fps max
-      if (Math.random() < 0.5) setV((x) => x + 1);
+      // nudge version to re-render ~20fps (reduced for performance)
+      if (Math.random() < 0.33) setV((x) => x + 1);
 
       requestAnimationFrame(tick);
     };

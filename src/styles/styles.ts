@@ -40,6 +40,8 @@ export const colors = {
 export const typography = {
   fontFamily: {
     primary: 'fff-forward.regular',
+    secondary: 'IrishGrover-Regular',
+    tertiary: 'PressStart2P-Regular',
     system: 'System',
   },
   fontSize: {
@@ -413,6 +415,16 @@ export const hudStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  scoreTextForOverlays: {
+    fontSize: typography.fontSize['xl'],
+    fontWeight: '700',
+    color: colors.white,
+    fontFamily: typography.fontFamily.tertiary,
+    includeFontPadding: false,
+    textAlign: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
 
 // Game-specific Styles
@@ -442,6 +454,7 @@ export const gameStyles = StyleSheet.create({
 
   iconRight: {
     marginLeft: 12,
+    paddingTop: 15,
   },
 
   iconText: {

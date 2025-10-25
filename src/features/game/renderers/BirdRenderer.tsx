@@ -1,9 +1,9 @@
 //bird renderer
-import { Canvas, Image as SkiaImage, useImage } from   "@shopify/react-native-skia";
-import { Bird, } from "../../../engine/entities/bird";
+import { Canvas, Image as SkiaImage, useImage } from "@shopify/react-native-skia";
+import { Bird } from "../../../engine/entities/bird";
 import { ViewStyle } from "react-native";
-import { useEffect, useState } from "react";
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withSequence, withTiming } from "react-native-reanimated";
+import { useEffect, useMemo, useState } from "react";
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 
 const birdSrc = require("@assets/images/birdmain.png");
 const wingsSrcDown = require("@assets/images/wingbottom.png");
@@ -12,29 +12,50 @@ const wingsSrcCenter = require("@assets/images/wingcenterupper.png");
 
 type WingKey = "up" | "down" | "center" | "centerupper";
 
-// Centralized per-sprite layout; using the same positions/pivots for all
-const WING_SPRITES: Record<WingKey, { src: any; leftMul: number; topMul: number; pivotXMul: number; pivotYMul: number }> = {
-  up: { src: wingsSrcUp, leftMul: 0.12, topMul: 0.32, pivotXMul: 0.3, pivotYMul: 0.5 },
-  down: { src: wingsSrcDown, leftMul: 0.12, topMul: 0.32, pivotXMul: 0.3, pivotYMul: 0.5 },
-  center: { src: wingsSrcCenter, leftMul: 0.12, topMul: 0.32, pivotXMul: 0.3, pivotYMul: 0.5 },
-  centerupper: { src: wingsSrcCenter, leftMul: 0.12, topMul: 0.32, pivotXMul: 0.3, pivotYMul: 0.5 }, // use center-upper sprite
+// Centralized per-sprite layout
+const WING_SPRITES: Record<WingKey, { leftMul: number; topMul: number }> = {
+  up: { leftMul: 0.06, topMul: 0.40 },
+  down: { leftMul: 0.06, topMul: 0.40 },
+  center: { leftMul: 0.06, topMul: 0.40 },
+  centerupper: { leftMul: 0.06, topMul: 0.40 },
 };
 
-export default function BirdRenderer({ bird, flapTick }: { bird: Bird; flapTick: number }) {
+type BirdRendererProps = {
+  bird: Bird;
+  jumpTick: number;
+};
+
+export default function BirdRenderer({ bird, jumpTick }: BirdRendererProps) {
   const birdImage = useImage(birdSrc);
-  // Body tilt based on vertical velocity for a more natural feel
+  const wingUpImage = useImage(wingsSrcUp);
+  const wingDownImage = useImage(wingsSrcDown);
+  const wingCenterImage = useImage(wingsSrcCenter);
+
   const tilt = useSharedValue(0);
+  const [wing, setWing] = useState<WingKey>("center");
 
-  // Map velocity to angle in radians: fast up => tilt up; falling => tilt down
-  const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
-  const map = (v: number, inMin: number, inMax: number, outMin: number, outMax: number) =>
-    outMin + ((clamp(v, inMin, inMax) - inMin) * (outMax - outMin)) / (inMax - inMin);
-
-  // Smoothly follow velocity changes
+  // Trigger wing flap animation on each jump
   useEffect(() => {
-    const angle = map(bird.vel.y, -480, 480, -Math.PI / 6, Math.PI / 12); // -30deg to +15deg
+    if (jumpTick === 0) return;
+    setWing("down");
+    const t1 = setTimeout(() => setWing("center"), 80);
+    const t2 = setTimeout(() => setWing("up"), 160);
+    const t3 = setTimeout(() => setWing("center"), 260);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, [jumpTick]);
+
+  // Body tilt based on velocity with easing
+  useEffect(() => {
+    const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
+    const map = (v: number, inMin: number, inMax: number, outMin: number, outMax: number) =>
+      outMin + ((clamp(v, inMin, inMax) - inMin) * (outMax - outMin)) / (inMax - inMin);
+    const angle = map(bird.vel.y, -480, 480, -Math.PI / 6, Math.PI / 20);
     tilt.value = withTiming(angle, { duration: 120, easing: Easing.inOut(Easing.cubic) });
-  }, [bird.vel.y, tilt]);
+  }, [bird.vel.y]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
@@ -46,59 +67,39 @@ export default function BirdRenderer({ bird, flapTick }: { bird: Bird; flapTick:
     ],
   }));
 
-  // Simple wings: render inside the bird container so they inherit the body tilt.
-  const [wing, setWing] = useState<WingKey>("center");
-  const wingCfg = WING_SPRITES[wing];
-  const wingImage = useImage(wingCfg.src);
-  const wingSize = Math.round(bird.size * 0.5);
-  const wingLeft = Math.round(bird.size * wingCfg.leftMul);
-  const wingTop = Math.round(bird.size * wingCfg.topMul);
-  const pivotX = Math.round(wingSize * wingCfg.pivotXMul);
-  const pivotY = Math.round(wingSize * wingCfg.pivotYMul);
+  // Memoize wing image selection and geometry
+  const wingImage = useMemo(() => {
+    if (wing === "up") return wingUpImage;
+    if (wing === "down") return wingDownImage;
+    return wingCenterImage;
+  }, [wing, wingUpImage, wingDownImage, wingCenterImage]);
 
-  const wingRot = useSharedValue(0);
-  useEffect(() => {
-    // On flap: animate wing states: down -> center -> centerupper -> up, then back to center (rest)
-    setWing("down");
-    wingRot.value = withSequence(
-      withTiming(0.35, { duration: 90, easing: Easing.out(Easing.cubic) }),   // down-ish
-      withTiming(0.1, { duration: 80, easing: Easing.inOut(Easing.cubic) }),  // center
-      withTiming(-0.2, { duration: 80, easing: Easing.inOut(Easing.cubic) }), // centerupper
-      withTiming(-0.5, { duration: 90, easing: Easing.in(Easing.cubic) }),    // up
-      withTiming(0, { duration: 150, easing: Easing.inOut(Easing.cubic) })    // settle to neutral
-    );
-    const t1 = setTimeout(() => setWing("center"), 100);
-    const t2 = setTimeout(() => setWing("centerupper"), 180);
-    const t3 = setTimeout(() => setWing("up"), 260);
-    const t4 = setTimeout(() => setWing("center"), 420); // return to normal
-
-    return () => {
-      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4);
+  const { wingLeft, wingTop, wingSize } = useMemo(() => {
+    const layout = WING_SPRITES[wing];
+    const size = Math.round(bird.size * 0.45);
+    return {
+      wingLeft: Math.round(bird.size * layout.leftMul),
+      wingTop: Math.round(bird.size * layout.topMul),
+      wingSize: size,
     };
-  }, [flapTick, wingRot]);
+  }, [wing, bird.size]);
 
-  const wingStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: pivotX },
-      { translateY: pivotY },
-      { rotate: `${wingRot.value}rad` },
-      { translateX: -pivotX },
-      { translateY: -pivotY },
-    ],
-  }));
+  const containerStyle = useMemo(() => ({
+    position: "absolute" as const,
+    left: bird.pos.x,
+    top: bird.pos.y,
+    width: bird.size,
+    height: bird.size,
+    zIndex: 15,
+    pointerEvents: "none" as const,
+  }), [bird.pos.x, bird.pos.y, bird.size]);
 
   return (
-    <Animated.View style={[{ 
-      position: "absolute", 
-      left: bird.pos.x, 
-      top: bird.pos.y, 
-      width: bird.size, 
-      height: bird.size,
-      zIndex: 15,
-      pointerEvents: "none",
-    } as ViewStyle, animatedStyle]}>
+    <Animated.View style={[containerStyle as ViewStyle, animatedStyle]}>
       <Canvas style={{ width: bird.size, height: bird.size } as ViewStyle}>
-        <SkiaImage image={birdImage} x={0} y={0} width={bird.size} height={bird.size} fit="contain" />
+        {birdImage && (
+          <SkiaImage image={birdImage} x={0} y={0} width={bird.size} height={bird.size} fit="contain" />
+        )}
       </Canvas>
       {wingImage && (
         <Animated.View style={[{
@@ -107,7 +108,7 @@ export default function BirdRenderer({ bird, flapTick }: { bird: Bird; flapTick:
           top: wingTop,
           width: wingSize,
           height: wingSize,
-        } as ViewStyle, wingStyle]}>
+        } as ViewStyle]}>
           <Canvas style={{ width: wingSize, height: wingSize } as ViewStyle}>
             <SkiaImage image={wingImage} x={0} y={0} width={wingSize} height={wingSize} fit="contain" />
           </Canvas>
