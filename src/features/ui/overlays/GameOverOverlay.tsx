@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet } from 'react-native';
 import React, { useEffect } from 'react';
 import { useGameStore } from '../../../store/gameStore';
-import PlayButton from '../buttons/PlayButton';
+import MenuButton from '../buttons/MenuButton';
 import RestartButton from '../buttons/RestartButton';
 import { BlurView } from 'expo-blur';
 import BestScoreDisplay from '../common/BestScoreDisplay';
@@ -21,7 +21,7 @@ export default function GameOverOverlay() {
       triggerConfetti();
       acknowledgeNewBest();
     }
-  }, [newBest, acknowledgeNewBest]);
+  }, [newBest, acknowledgeNewBest, triggerConfetti]);
 
   const handleRestart = () => {
     resetGame();
@@ -46,9 +46,11 @@ export default function GameOverOverlay() {
           <BestScoreDisplay bestScore={bestScore} currentScore={score} />
         </View>
         
-        <View style={GameOverLocalStyles.buttonsBottom}>
+        <View style={GameOverLocalStyles.buttonsRestart}>
           <RestartButton onPress={handleRestart} title="Play Again" />
-          <PlayButton onPress={handleMenu} title="Back to Menu" />
+        </View>
+        <View style={GameOverLocalStyles.buttonsMenu}>
+          <MenuButton onPress={handleMenu} title="Back to Menu" />
         </View>
       </View>
     </View>
@@ -61,26 +63,27 @@ const GameOverLocalStyles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 20,
     justifyContent: 'center',
-    alignItems: 'center',
   },
   title: {
-    fontSize: 48,
+    fontSize: 72,
     fontWeight: '700',
     color: '#FFFFFF',
     textAlign: 'center',
     fontFamily: 'fff-forward.regular',
     marginTop: 0,
-    marginBottom: 12,
+    marginBottom: 100,
   },
   scoreCenter: {
     flexGrow: 0,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 30,
   },
-  buttonsBottom: {
-    marginTop: 16,
-    gap: 14,
-    alignItems: 'center',
-    transform: [{ scale: 0.85 }],
+  buttonsRestart: {
+    marginBottom: 30,
+  },
+  buttonsMenu: {
+    marginTop: 30,
+    transform: [{ scale: 0.65 }],
   },
 });

@@ -2,7 +2,7 @@
 import { createPipePair } from "../entities/pipes";
 import { CONFIG } from "../config/settings";
 import { useGameStore } from "@src/store/gameStore";
-import { difficultySetting, DifficultyLevel } from "../config/difficulty";
+import { difficultySetting, DifficultyLevel, AdaptiveDifficulty } from "../config/difficulty";
 
 let timeSinceLastSpawn = 0;
 let nextSpawnIntervalMs: number | null = null; // sampled per spawn window
@@ -18,17 +18,26 @@ export function resetSpawnTimer() {
   lastGapSize = null;
 }
 
-export function spawningSystem(dt: number, level: DifficultyLevel) {
-  const speed = difficultySetting.getPipeSpeed(level);
+export function spawningSystem(dt: number, level: DifficultyLevel, adaptiveDifficulty?: AdaptiveDifficulty) {
+  // Use adaptive difficulty if provided, otherwise fall back to static settings
+  const settings = adaptiveDifficulty?.getCurrentSettings() ?? {
+    pipeGapSize: difficultySetting.getPipeGapSize(level),
+    pipeSpawnInterval: difficultySetting.getPipeInterval(level),
+    pipeSpeedMultiplier: difficultySetting.getPipeSpeed(level) / CONFIG.pipe.speed,
+    spawnPattern: difficultySetting.getSpawnPattern(level),
+    randomSpawnChance: difficultySetting.getRandomSpawnChance(level),
+    pipeVariation: difficultySetting.getPipeVariation(level),
+  };
+  
+  const speed = CONFIG.pipe.speed * settings.pipeSpeedMultiplier;
   // Sample interval only when needed; keep constant during countdown
   if (nextSpawnIntervalMs == null) {
-    nextSpawnIntervalMs = difficultySetting.getPipeInterval(level);
+    nextSpawnIntervalMs = settings.pipeSpawnInterval;
   }
   const interval = nextSpawnIntervalMs; // ms
   // Gap is sampled only when we actually spawn
-  const spawnPattern = difficultySetting.getSpawnPattern(level);
-  const gapPositionMode = difficultySetting.getPipeGapPosition(level);
-  const randomSpawnChance = difficultySetting.getRandomSpawnChance(level);
+  const spawnPattern = settings.spawnPattern;
+  const randomSpawnChance = settings.randomSpawnChance;
   
   timeSinceLastSpawn += dt * 1000;
 
@@ -51,8 +60,8 @@ export function spawningSystem(dt: number, level: DifficultyLevel) {
     if (working.length === 0 && state.gameState === 'playing') {
       const startX = CONFIG.screen.width + 20;
       // Sample gap only when spawning
-      const baseGap = difficultySetting.getPipeGap(level);
-      const variation = difficultySetting.getPipeVariation(level);
+      const baseGap = settings.pipeGapSize;
+      const variation = settings.pipeVariation;
       const spanPx = Math.max(40, (CONFIG.pipe.maxGap - CONFIG.pipe.minGap) * 0.25);
       const initialGap = Math.max(
         CONFIG.pipe.minGap,
@@ -82,7 +91,7 @@ export function spawningSystem(dt: number, level: DifficultyLevel) {
     if (timeSinceLastSpawn >= interval) {
       timeSinceLastSpawn = 0;
       // Resample next interval for the coming window
-      nextSpawnIntervalMs = difficultySetting.getPipeInterval(level);
+      nextSpawnIntervalMs = settings.pipeSpawnInterval;
       const startX = CONFIG.screen.width + 20;
 
       let shouldSpawn = true;
@@ -96,8 +105,8 @@ export function spawningSystem(dt: number, level: DifficultyLevel) {
 
       if (shouldSpawn) {
         // Sample gap size only now to avoid per-frame randomness
-        const baseGap = difficultySetting.getPipeGap(level);
-        const variation = difficultySetting.getPipeVariation(level);
+        const baseGap = settings.pipeGapSize;
+        const variation = settings.pipeVariation;
         const spanPx = Math.max(40, (CONFIG.pipe.maxGap - CONFIG.pipe.minGap) * 0.25);
         // Vary gap within safe bounds based on difficulty variation
         let gapSize = Math.round(baseGap + (Math.random() * 2 - 1) * spanPx * variation);
@@ -109,20 +118,11 @@ export function spawningSystem(dt: number, level: DifficultyLevel) {
         const maxCenter = floorY - gapSize / 2 - 50;
         const maxStep = 110 * (0.6 + 0.4 * variation); // px per spawn window
         let proposedCenter: number;
-        if (gapPositionMode === 'fixed') {
-          proposedCenter = (minCenter + maxCenter) / 2;
-        } else if (gapPositionMode === 'alternating') {
-          const mid = (minCenter + maxCenter) / 2;
-          const offset = (maxCenter - minCenter) * 0.28;
-          const goTop = lastGapCenter == null ? Math.random() < 0.5 : lastGapCenter >= mid;
-          proposedCenter = goTop ? (mid - offset) : (mid + offset);
-        } else {
-          // random with smoothness
-          proposedCenter =
-            lastGapCenter == null
-              ? (minCenter + Math.random() * (maxCenter - minCenter))
-              : lastGapCenter + (Math.random() * 2 - 1) * maxStep;
-        }
+        // Default to random positioning for adaptive difficulty
+        proposedCenter =
+          lastGapCenter == null
+            ? (minCenter + Math.random() * (maxCenter - minCenter))
+            : lastGapCenter + (Math.random() * 2 - 1) * maxStep;
         // Clamp within playable bounds
         proposedCenter = Math.max(minCenter, Math.min(maxCenter, proposedCenter));
 

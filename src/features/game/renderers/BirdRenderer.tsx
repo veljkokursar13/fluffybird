@@ -76,7 +76,7 @@ export default function BirdRenderer({ bird, jumpTick }: BirdRendererProps) {
 
   const { wingLeft, wingTop, wingSize } = useMemo(() => {
     const layout = WING_SPRITES[wing];
-    const size = Math.round(bird.size * 0.55);
+    const size = Math.round(bird.size * 0.45);
     return {
       wingLeft: Math.round(bird.size * layout.leftMul),
       wingTop: Math.round(bird.size * layout.topMul),

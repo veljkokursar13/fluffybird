@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useGameStore } from '../../../store/gameStore';
 import PlayButton from '../buttons/PlayButton';
+import MenuButton from '../buttons/MenuButton';
 import RestartButton from '../buttons/RestartButton';
 import { BlurView } from 'expo-blur';
 import BestScoreDisplay from '../common/BestScoreDisplay';
@@ -46,10 +47,14 @@ export default function PauseOverlay() {
           <BestScoreDisplay bestScore={bestScore} currentScore={score} />
         </View>
         
-        <View style={PauseOverlayLocalStyles.buttonsBottom}>
+        <View style={PauseOverlayLocalStyles.buttonsResume}>
           <PlayButton onPress={handleResume} title="Resume" />
+        </View>
+        <View style={PauseOverlayLocalStyles.buttonsRestart}>
           <RestartButton onPress={handleRestart} title="Restart" />
-          <PlayButton onPress={handleMenu} title="Back to Menu" />
+        </View>
+        <View style={PauseOverlayLocalStyles.buttonsMenu}>
+          <MenuButton onPress={handleMenu} title="Back to Menu" />
         </View>
       </View>
     </View>
@@ -60,28 +65,32 @@ const PauseOverlayLocalStyles = StyleSheet.create({
   layoutContainer: {
     flex: 1,
     width: '100%',
-    paddingHorizontal: 80,
+    paddingHorizontal: 20,
     justifyContent: 'center',
-    alignItems: 'center',
   },
   title: {
-    fontSize: 48,
+    fontSize: 72,
     fontWeight: '700',
     color: '#FFFFFF',
     textAlign: 'center',
     fontFamily: 'fff-forward.regular',
     marginTop: 0,
-    marginBottom: 12,
+    marginBottom: 100,
   },
   scoreCenter: {
     flexGrow: 0,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 30,
   },
-  buttonsBottom: {
-    marginTop: 16,
-    gap: 14,
-    alignItems: 'center',
-    transform: [{ scale: 0.85 }],
+  buttonsResume: {
+    marginBottom: 20,
+  },
+  buttonsRestart: {
+    marginBottom: 30,
+  },
+  buttonsMenu: {
+    marginTop: 30,
+    transform: [{ scale: 0.65 }],
   },
 });

@@ -66,7 +66,7 @@ export default function GameContainer() {
   const handleTap = () => {
     const store = useGameStore.getState();
     const currentState = store.gameState;
-    playSound('gameplaysound');
+    
     if (currentState === 'menu') {
       setGameState('playing');
       // next frame to ensure state transition is reflected
@@ -74,6 +74,7 @@ export default function GameContainer() {
       return;
     }
     if (currentState === 'playing') {
+      playSound('gameplaysound');
       store.jump();
       return;
     }
@@ -93,6 +94,16 @@ export default function GameContainer() {
   const jumpTick = useGameStore((state) => state.jumpTick);
   const moving = gameState === 'playing';
   const score = useGameStore((state) => state.score);
+  const adaptiveDifficulty = useGameStore((state) => state.adaptiveDifficulty);
+  
+  // Track score changes to reset consecutive deaths counter
+  const prevScoreRef = useRef(score);
+  useEffect(() => {
+    if (score > prevScoreRef.current) {
+      adaptiveDifficulty.onScoreIncrease();
+    }
+    prevScoreRef.current = score;
+  }, [score, adaptiveDifficulty]);
   
   // Only render pipes during gameplay (clear immediately on game over for clean transition)
   const pipesToRender = gameState === 'playing' ? pipes : [];
@@ -127,10 +138,13 @@ export default function GameContainer() {
       vel: { x: current.vel.x, y: velY },
     });
 
+    // Update adaptive difficulty with current score
+    adaptiveDifficulty.updateScore(score);
+    
     // Difficulty based on score thresholds (five levels)
     const level: DifficultyLevel = getLevelForScore(score);
-    // Spawn/move pipes according to difficulty
-    spawningSystem(dt, level);
+    // Spawn/move pipes according to adaptive difficulty
+    spawningSystem(dt, level, adaptiveDifficulty);
 
     // Collision check against ground/ceiling and pipes (if any)
     // Skip collision if no pipes exist (performance optimization)
