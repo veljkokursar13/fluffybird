@@ -11,11 +11,13 @@ interface DifficultySettings {
   spawnPattern: 'regular' | 'random' | 'alternating';
   randomSpawnChance: number; // Chance of spawning a pipe (0-1)
   pipeVariation: number; // How much pipes can vary in height (0-1)
+  pipeGapPosition: 'random' | 'fixed' | 'alternating';
 }
 
 const difficultySettings: Record<DifficultyLevel, DifficultySettings> = {
   easy: {
     pipeGapSize: 260,
+    pipeGapPosition: 'random',
     pipeSpawnInterval: 2800,
     pipeSpeedMultiplier: 0.55,
     minPipeHeight: 100,
@@ -26,6 +28,7 @@ const difficultySettings: Record<DifficultyLevel, DifficultySettings> = {
   },
   easyMedium:{
     pipeGapSize: 230,
+    pipeGapPosition: 'random',
     pipeSpawnInterval: 2500,
     pipeSpeedMultiplier: 0.65,
     minPipeHeight: 120,
@@ -37,6 +40,8 @@ const difficultySettings: Record<DifficultyLevel, DifficultySettings> = {
   medium: {
     pipeGapSize: 200,
     pipeSpawnInterval: 2000,
+    pipeGapPosition: 'random',
+
     pipeSpeedMultiplier: 0.75,
     minPipeHeight: 150,
     maxPipeHeight: 350,
@@ -47,6 +52,7 @@ const difficultySettings: Record<DifficultyLevel, DifficultySettings> = {
   mediumHard:{
     pipeGapSize: 180,
     pipeSpawnInterval: 1800,
+    pipeGapPosition: 'random',
     pipeSpeedMultiplier: 0.9,
     minPipeHeight: 170,
     maxPipeHeight: 370,
@@ -57,6 +63,7 @@ const difficultySettings: Record<DifficultyLevel, DifficultySettings> = {
   hard: {
     pipeGapSize: 160,
     pipeSpawnInterval: 1800,
+    pipeGapPosition: 'random',
     pipeSpeedMultiplier: 1.05,
     minPipeHeight: 180,
     maxPipeHeight: 380,
@@ -168,6 +175,10 @@ export const difficultySetting = {
   getPipeVariation(level: DifficultyLevel) {
     manager.setDifficulty(level);
     return manager.settings.pipeVariation;
+  },
+  getPipeGapPosition(level: DifficultyLevel) {
+    manager.setDifficulty(level);
+    return manager.settings.pipeGapPosition;
   },
 };
  

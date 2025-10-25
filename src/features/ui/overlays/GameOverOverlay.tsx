@@ -1,12 +1,12 @@
 import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect } from 'react';
 import { useGameStore } from '../../../store/gameStore';
 import PlayButton from '../buttons/PlayButton';
 import RestartButton from '../buttons/RestartButton';
 import { BlurView } from 'expo-blur';
 import BestScoreDisplay from '../common/BestScoreDisplay';
 import { overlayStyles } from '../../../styles/styles';
-
-
+import { useBestScore } from '@/src/hooks/useScore';
 export default function GameOverOverlay() {
   const gameState = useGameStore((state) => state.gameState);
   const score = useGameStore((state) => state.score);
@@ -14,6 +14,14 @@ export default function GameOverOverlay() {
   const setGameState = useGameStore((state) => state.setGameState);
   const resetGame = useGameStore((state) => state.resetGame);
   const backToMenu = useGameStore((state) => state.backToMenu);
+  const { newBest, acknowledgeNewBest, triggerConfetti } = useBestScore();
+
+  useEffect(() => {
+    if (newBest) {
+      triggerConfetti();
+      acknowledgeNewBest();
+    }
+  }, [newBest, acknowledgeNewBest]);
 
   const handleRestart = () => {
     resetGame();

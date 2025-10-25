@@ -13,6 +13,7 @@ interface GameStore {
   gameState: GameState;
   score: number;
   bestScore: number;
+  newBestAchieved: boolean;
   // Input state
   jumpTick: number; // Increments on each jump to trigger animations
   // Sound state
@@ -34,6 +35,7 @@ interface GameStore {
   backToMenu: () => void;
   updateBird: (bird: Partial<Bird>) => void;
   jump: () => void;
+  acknowledgeNewBest: () => void;
 }
 
 const initialBird: Bird = {
@@ -48,6 +50,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   gameState: 'menu',
   score: 0,
   bestScore: 0,
+  newBestAchieved: false,
   jumpTick: 0,
   muted: false,
   bird: initialBird,
@@ -59,7 +62,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({ gameState: state });
     if (state === 'gameOver') {
       const currentScore = get().score;
-      set((s) => ({ bestScore: Math.max(currentScore, s.bestScore) }));
+      const prevBest = get().bestScore;
+      const isNewBest = currentScore > prevBest;
+      set({ bestScore: Math.max(currentScore, prevBest), newBestAchieved: isNewBest });
     }
   },
   setMuted: (muted) => set({ muted }),
@@ -68,9 +73,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
   gameOver: () => {
     set({ gameState: 'gameOver' });
     const currentScore = get().score;
-    set((state) => ({
-      bestScore: Math.max(currentScore, state.bestScore),
-    }));
+    const prevBest = get().bestScore;
+    const isNewBest = currentScore > prevBest;
+    set({ bestScore: Math.max(currentScore, prevBest), newBestAchieved: isNewBest });
   },
   
   resetGame: () => {
@@ -81,6 +86,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       bird: { ...initialBird },
       pipes: [],
       jumpTick: 0,
+      newBestAchieved: false,
     });
   },
   
@@ -118,4 +124,5 @@ export const useGameStore = create<GameStore>((set, get) => ({
       jumpTick: state.jumpTick + 1,
     };
   }),
+  acknowledgeNewBest: () => set({ newBestAchieved: false }),
 }));

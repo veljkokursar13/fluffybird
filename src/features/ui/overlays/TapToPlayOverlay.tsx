@@ -1,5 +1,4 @@
 // Tap to play overlay. Shows on game screen when entering from menu.
-import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useGameStore } from '@/src/store/gameStore';
 
@@ -33,17 +32,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 16,
     borderRadius: 12,
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    backgroundColor: 'rgba(0,0,0,0.1)',
   },
   title: {
-    fontSize: 28,
+    fontSize: 36,
     fontWeight: '700',
     color: '#FFFFFF',
     fontFamily: 'fff-forward.regular',
   },
   subtitle: {
     marginTop: 6,
-    fontSize: 14,
+    fontSize: 16,
     color: '#FFFFFF',
     opacity: 0.9,
     fontFamily: 'fff-forward.regular',
