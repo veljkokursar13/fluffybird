@@ -112,25 +112,34 @@ export function spawningSystem(dt: number, level: DifficultyLevel, adaptiveDiffi
         let gapSize = Math.round(baseGap + (Math.random() * 2 - 1) * spanPx * variation);
         gapSize = Math.max(CONFIG.pipe.minGap, Math.min(CONFIG.pipe.maxGap, gapSize));
 
-        // Compute next gap center with limited vertical step to keep flow fair
+        // Compute next gap center with improved vertical variation
         const floorY = CONFIG.screen.floorY;
         const minCenter = gapSize / 2 + 50;
         const maxCenter = floorY - gapSize / 2 - 50;
-        const maxStep = 110 * (0.6 + 0.4 * variation); // px per spawn window
+        const maxStep = 180 * (0.5 + 0.5 * variation); // Increased base step for more variation
         let proposedCenter: number;
-        // Default to random positioning for adaptive difficulty
-        proposedCenter =
-          lastGapCenter == null
-            ? (minCenter + Math.random() * (maxCenter - minCenter))
-            : lastGapCenter + (Math.random() * 2 - 1) * maxStep;
+        
+        // Occasionally force dramatic position changes (25% chance)
+        const shouldForceVariation = Math.random() < 0.25;
+        if (shouldForceVariation && lastGapCenter != null) {
+          // Force a jump to a different vertical zone
+          const zones = [minCenter + 60, (minCenter + maxCenter) / 2, maxCenter - 60];
+          proposedCenter = zones[Math.floor(Math.random() * zones.length)];
+        } else {
+          // Normal smooth variation
+          proposedCenter =
+            lastGapCenter == null
+              ? (minCenter + Math.random() * (maxCenter - minCenter))
+              : lastGapCenter + (Math.random() * 2 - 1) * maxStep;
+        }
         // Clamp within playable bounds
         proposedCenter = Math.max(minCenter, Math.min(maxCenter, proposedCenter));
 
-        // Avoid back-to-back extreme flips (top extreme to bottom extreme)
-        const isPrevTopExtreme = lastGapCenter != null && (lastGapCenter - minCenter) < 28;
-        const isPrevBottomExtreme = lastGapCenter != null && (maxCenter - lastGapCenter) < 28;
-        const isNextTopExtreme = (proposedCenter - minCenter) < 28;
-        const isNextBottomExtreme = (maxCenter - proposedCenter) < 28;
+        // Avoid back-to-back extreme flips (relaxed threshold)
+        const isPrevTopExtreme = lastGapCenter != null && (lastGapCenter - minCenter) < 20;
+        const isPrevBottomExtreme = lastGapCenter != null && (maxCenter - lastGapCenter) < 20;
+        const isNextTopExtreme = (proposedCenter - minCenter) < 20;
+        const isNextBottomExtreme = (maxCenter - proposedCenter) < 20;
         if ((isPrevTopExtreme && isNextBottomExtreme) || (isPrevBottomExtreme && isNextTopExtreme)) {
           proposedCenter = (minCenter + maxCenter) / 2;
         }

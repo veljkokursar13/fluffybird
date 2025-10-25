@@ -27,7 +27,7 @@ interface GameStore {
   // Game entities
   bird: Bird;
   pipes: PipePair[];
-  
+  updatePipes: (pipesUpdate: Partial<PipePair[]>) => void;
   // Adaptive difficulty
   adaptiveDifficulty: AdaptiveDifficulty;
   
@@ -119,7 +119,11 @@ export const useGameStore = create<GameStore>()(
         if (!state.bird || !birdUpdate) return {};
         return { bird: { ...state.bird, ...birdUpdate } };
       }),
-      
+
+      updatePipes: (pipesUpdate: Partial<PipePair[]>) => set((state) => {
+        if (!state.pipes || !pipesUpdate) return {};
+        return { pipes: state.pipes.map((pipe) => ({ ...pipe, ...pipesUpdate })) };
+      }),
       jump: () => set((state) => {
         if (!state.bird?.vel) return {};
         return {
@@ -131,6 +135,7 @@ export const useGameStore = create<GameStore>()(
         };
       }),
       acknowledgeNewBest: () => set({ newBestAchieved: false }),
+  
     }),
     {
       name: 'game-store',
