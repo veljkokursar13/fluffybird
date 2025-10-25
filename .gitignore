@@ -1,4 +1,39 @@
-﻿# Node
+﻿# Node / React Native / Expo
+node_modules/
+.expo/
+.expo-shared/
+.expo/*cache*/
+dist/
+build/
+web-build/
+coverage/
+
+# Platform builds (kept out of repo unless intentionally added)
+android/
+ios/
+
+# Environment & local config
+.env
+.env.*
+.env.local
+.envrc
+
+# Logs & OS junk
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+.DS_Store
+Thumbs.db
+
+# Editors/IDE
+.vscode/
+.idea/
+
+# TypeScript build info
+*.tsbuildinfo
+# Node
 node_modules/
 npm-debug.log*
 yarn-debug.log*

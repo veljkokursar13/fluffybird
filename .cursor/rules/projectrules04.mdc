@@ -1,0 +1,14 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Coverage Targets
+- 100% for physics functions and systems.
+- Smoke tests for Skia components (render without crash, key props).
+- Golden tests for collision edges and score increments.
+
+# Test Utilities
+- Provide a test harness that steps the physics with a fixed dt and seed.
+- Snapshots only for deterministic outputs (golden states), not for UI.
+

@@ -1,0 +1,14 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Skia Practices
+- Extract draw logic into pure helpers returning paths/paints; keep JSX minimal.
+- Document sprite coordinate system and anchor points.
+- Avoid mixing Reanimated animations into Skia tree; bridge via shared values only when necessary.
+
+# Pipe & Bird
+- Pipe segments are vertically tileable; cap is separate; sizes come from settings.ts.
+- Bird body is a base layer; wings are separate animated layer(s).
+
