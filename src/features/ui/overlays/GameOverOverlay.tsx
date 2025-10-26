@@ -8,6 +8,7 @@ import BestScoreDisplay from '../common/BestScoreDisplay';
 import { overlayStyles } from '../../../styles/styles';
 import { useBestScore } from '@/src/hooks/useScore';
 import * as Haptics from 'expo-haptics';
+
 export default function GameOverOverlay() {
   const gameState = useGameStore((state) => state.gameState);
   const score = useGameStore((state) => state.score);
