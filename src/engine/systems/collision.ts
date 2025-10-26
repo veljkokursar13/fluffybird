@@ -38,15 +38,6 @@ export const collisionSystem = (
   } else {
     // Pipe collision checks (caps first)
     for (const pair of pipePairs) {
-      // Bottom pipe body (without cap)
-      const bottomBodyHeight = Math.max(0, pair.bottom.height - capHeight);
-      const bottomPipeBodyRect = {
-        x: pair.bottom.pos.x,
-        y: pair.bottom.pos.y + capHeight,
-        width: pair.bottom.width,
-        height: bottomBodyHeight,
-      };
-      
       // Bottom pipe cap (top of bottom pipe)
       const bottomPipeCapRect: Rect = {
         x: pair.bottom.pos.x - (capWidth - pair.bottom.width) / 2,
@@ -55,15 +46,15 @@ export const collisionSystem = (
         height: capHeight
       };
       
-      // Top pipe body (without cap)
-      const topBodyHeight = Math.max(0, pair.top.height - capHeight);
-      const topPipeBodyRect = {
-        x: pair.top.pos.x,
-        y: pair.top.pos.y,
-        width: pair.top.width,
-        height: topBodyHeight,
+      // Bottom pipe body (without cap)
+      const bottomBodyHeight = Math.max(0, pair.bottom.height - capHeight);
+      const bottomPipeBodyRect = {
+        x: pair.bottom.pos.x,
+        y: pair.bottom.pos.y + capHeight,
+        width: pair.bottom.width,
+        height: bottomBodyHeight,
       };
-      
+
       // Top pipe cap (bottom of top pipe, rotated)
       const topPipeCapRect: Rect = {
         x: pair.top.pos.x - (capWidth - pair.top.width) / 2,
@@ -72,19 +63,28 @@ export const collisionSystem = (
         height: capHeight
       };
 
+      // Top pipe body (without cap)
+      const topBodyHeight = Math.max(0, pair.top.height - capHeight);
+      const topPipeBodyRect = {
+        x: pair.top.pos.x,
+        y: pair.top.pos.y,
+        width: pair.top.width,
+        height: topBodyHeight,
+      };
 
+      if (intersects(bird, topPipeCapRect)) {
+        return collisionStates.TOP_CAP;
+      }
+      if (intersects(bird, bottomPipeCapRect)) {
+        return collisionStates.BOTTOM_CAP;
+      }
+      
       if (intersects(bird, bottomPipeBodyRect)) {
         return collisionStates.BOTTOM;
       }
       
       if (intersects(bird, topPipeBodyRect)) {
         return collisionStates.TOP;
-      }
-      if (intersects(bird, topPipeCapRect)) {
-        return collisionStates.TOP_CAP;
-      }
-      if (intersects(bird, bottomPipeCapRect)) {
-        return collisionStates.BOTTOM_CAP;
       }
     }
   }
