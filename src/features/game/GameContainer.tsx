@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { View, Pressable, TouchableOpacity, StyleSheet } from 'react-native';
 import { gameStyles, hudStyles } from '../../styles/styles';
 import { WorldRenderer } from './renderers/WorldRenderer';  
-
 import BirdRenderer from './renderers/BirdRenderer';
 import { useGameStore } from '../../store/gameStore';
 import { Pause, Volume2, VolumeX } from 'lucide-react-native';
@@ -21,8 +20,6 @@ import { getLevelForScore } from '../../engine/config/difficulty';
 
 import { useSoundStore } from '@/src/sound/soundStore';
 
-
-
 const pipeContainerStyle = { position: 'absolute' as const, left: 0, top: 0, right: 0, bottom: 0, zIndex: 9 };
 
 export default function GameContainer() {
@@ -30,10 +27,16 @@ export default function GameContainer() {
   const setGameState = useGameStore((state) => state.setGameState);
   const resetGame = useGameStore((state) => state.resetGame);
   const clearGameCache = useGameStore((state) => state.clearGameCache);
+  const bird = useGameStore((state) => state.bird);
+  const pipes = useGameStore((state) => state.pipes);
+  const jumpTick = useGameStore((state) => state.jumpTick);
+  const score = useGameStore((state) => state.score);
+  const adaptiveDifficulty = useGameStore((state) => state.adaptiveDifficulty);
   const muted = useSoundStore((s) => s.muted);
   const toggleMute = useSoundStore((s) => s.toggleMute);
   const stopBgm = useSoundStore((s) => s.stopBgm);
-  const playSound = useSoundStore((s) => s.playSound);
+  const playLoopingSound = useSoundStore((s) => s.playLoopingSound);
+  const stopLoopingSound = useSoundStore((s) => s.stopLoopingSound);
  
   // Stop any menu soundtrack when entering the game screen
   useEffect(() => {
@@ -54,11 +57,23 @@ export default function GameContainer() {
   useEffect(() => {
     if (gameState === 'menu' || gameState === 'gameOver') {
       setHasStarted(false);
-     
-    } if(gameState === 'playing' && !hasStarted) {
+    } else if (gameState === 'playing' && !hasStarted) {
       setHasStarted(true);
     }
-  }, [gameState]);
+  }, [gameState, hasStarted]);
+
+  // Loop gameplay sound while playing
+  useEffect(() => {
+    if (gameState === 'playing') {
+      playLoopingSound('gameplaysound');
+    } else {
+      stopLoopingSound('gameplaysound');
+    }
+    
+    return () => {
+      stopLoopingSound('gameplaysound');
+    };
+  }, [gameState, playLoopingSound, stopLoopingSound]);
 
   const handlePause = () => {
     setGameState('paused');
@@ -74,7 +89,6 @@ export default function GameContainer() {
       return;
     }
     if (currentState === 'playing') {
-      playSound('gameplaysound');
       store.jump();
       return;
     }
@@ -88,13 +102,8 @@ export default function GameContainer() {
     lastTapRef.current = now;
     handleTap();
   };
-
-  const bird = useGameStore((state) => state.bird);
-  const pipes = useGameStore((state) => state.pipes);
-  const jumpTick = useGameStore((state) => state.jumpTick);
+  
   const moving = gameState === 'playing';
-  const score = useGameStore((state) => state.score);
-  const adaptiveDifficulty = useGameStore((state) => state.adaptiveDifficulty);
   
   // Track score changes to reset consecutive deaths counter
   const prevScoreRef = useRef(score);

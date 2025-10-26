@@ -70,11 +70,14 @@ function CloudSystem({
   useEffect(() => {
     let mounted = true;
     let last = performance.now();
+    let renderAccum = 0;
+    const RENDER_INTERVAL = 1 / 30; // ~30fps for clouds (smoother than 20fps, cheaper than 60fps)
 
     const tick = (now: number) => {
       if (!mounted) return;
       const dt = Math.min(0.05, (now - last) / 1000); // clamp
       last = now;
+      renderAccum += dt;
 
       const pool = poolRef.current;
 
@@ -99,8 +102,11 @@ function CloudSystem({
         if (c) pool.push(c);
       }
 
-      // nudge version to re-render ~20fps (reduced for performance)
-      if (Math.random() < 0.33) setV((x) => x + 1);
+      // Throttle re-renders to ~30fps to prevent tap stutter
+      if (renderAccum >= RENDER_INTERVAL) {
+        setV((x) => x + 1);
+        renderAccum = 0;
+      }
 
       requestAnimationFrame(tick);
     };

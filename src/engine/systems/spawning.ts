@@ -45,15 +45,22 @@ export function spawningSystem(dt: number, level: DifficultyLevel, adaptiveDiffi
     // Guard: prevent crashes if state is invalid
     if (!state?.bird || !Array.isArray(state.pipes)) return {};
 
-    // Move existing pipes (mutate in place for performance)
+    // Move existing pipes (immutable for smooth rendering)
     const speedDelta = speed * dt;
-    state.pipes.forEach((pair) => {
-      pair.bottom.pos.x -= speedDelta;
-      pair.top.pos.x -= speedDelta;
-    });
+    const movedPipes = state.pipes.map((pair) => ({
+      ...pair,
+      bottom: {
+        ...pair.bottom,
+        pos: { x: pair.bottom.pos.x - speedDelta, y: pair.bottom.pos.y }
+      },
+      top: {
+        ...pair.top,
+        pos: { x: pair.top.pos.x - speedDelta, y: pair.top.pos.y }
+      }
+    }));
 
     // Cull off-screen pipes
-    const visible = state.pipes.filter((pair) => pair.bottom.pos.x >= -pair.bottom.width);
+    const visible = movedPipes.filter((pair) => pair.bottom.pos.x >= -pair.bottom.width);
 
     // Ensure an initial pipe exists when starting the game
     let working = visible;

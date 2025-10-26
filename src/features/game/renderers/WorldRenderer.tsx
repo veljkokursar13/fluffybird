@@ -232,7 +232,7 @@ function Ground({ width }: { width: number }) {
 
 // ---- WorldRenderer ---------------------------------------
 
-export function WorldRenderer({ moving = false }: { moving?: boolean }) {
+export const WorldRenderer = React.memo(({ moving = false }: { moving?: boolean }) => {
   const { width, height } = useWindowDimensions();
   const sunW = Math.round(width * 0.6);
   const sunH = sunW;
@@ -260,4 +260,4 @@ export function WorldRenderer({ moving = false }: { moving?: boolean }) {
       <Ground width={width} />
     </View>
   );
-}
+});

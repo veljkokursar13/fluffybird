@@ -2,7 +2,7 @@
 import { Canvas, Image as SkiaImage, useImage } from "@shopify/react-native-skia";
 import { Bird } from "../../../engine/entities/bird";
 import { ViewStyle } from "react-native";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, memo } from "react";
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 
 const birdSrc = require("@assets/images/birdmain.png");
@@ -25,7 +25,7 @@ type BirdRendererProps = {
   jumpTick: number;
 };
 
-export default function BirdRenderer({ bird, jumpTick }: BirdRendererProps) {
+const BirdRenderer = memo(({ bird, jumpTick }: BirdRendererProps) => {
   const birdImage = useImage(birdSrc);
   const wingUpImage = useImage(wingsSrcUp);
   const wingDownImage = useImage(wingsSrcDown);
@@ -116,6 +116,6 @@ export default function BirdRenderer({ bird, jumpTick }: BirdRendererProps) {
       )}
     </Animated.View>
   );
-}
+});
 
-
+export default BirdRenderer;
