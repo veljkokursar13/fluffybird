@@ -1,0 +1,15 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Scope & Non-Overlap Contract
+These rules define stack-specific implementation details for the Fluffy Bird app (React Native + Expo + Skia).
+They rely on, but do not repeat, any global rules. If a conflict appears:
+- Project rules override tool choices and file layout.
+- Global rules still enforce process, security posture, reviews, and output format.
+
+# TL;DR
+- TypeScript-only, Expo Router navigation, Skia rendering, Reanimated for non-canvas UI.
+- All dimensions/physics via src/config/settings.ts (single source of truth).
+- Never change src/components/NavbarGrid/* markup; style via props/wrappers only.

@@ -1,0 +1,30 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Tech Stack
+- React Native (Expo). No ejecting.
+- Canvas: @shopify/react-native-skia.
+- Animations (non-canvas): react-native-reanimated.
+- State: Zustand or Context (pick one and stay consistent).
+- Tests: Jest + @testing-library/react-native.
+- Lint/Format: ESLint + Prettier with TypeScript.
+
+# Language
+- TypeScript only. No JS files in src/.
+
+# Structure (convention)
+src/
+  components/
+  screens/
+  game/
+    physics/
+    systems/
+    sprites/
+  config/
+    settings.ts
+  services/
+  hooks/
+  lib/
+assets/

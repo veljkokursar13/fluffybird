@@ -1,0 +1,18 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Boundaries
+- Game physics & constants live under src/config/settings.ts and src/game/physics/*.
+- Rendering is pure Skia components under src/game/sprites/*.
+- Systems (spawning, scoring, collisions) in src/game/systems/* as pure functions.
+- No magic numbers: import from settings.ts.
+
+# Determinism
+- Physics step must be deterministic for a given frame delta + seed.
+- Introduce a lightweight RNG (seeded) for spawn variability; document its use.
+
+# Performance
+- Memoize Skia nodes. Avoid prop churn.
+- Keep render components leaf-like; push math outside render paths.

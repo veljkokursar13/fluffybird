@@ -1,0 +1,10 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Immutable Contracts
+- Do NOT change JSX structure of src/components/NavbarGrid/*.
+- Do NOT introduce alternate navigation; keep Expo Router file-based routes.
+- Do NOT duplicate constants outside src/config/settings.ts.
+- Do NOT add new animation libraries.
