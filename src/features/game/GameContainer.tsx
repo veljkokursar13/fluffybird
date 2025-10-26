@@ -155,14 +155,11 @@ export default function GameContainer() {
     // Spawn/move pipes according to adaptive difficulty
     spawningSystem(dt, level, adaptiveDifficulty);
 
-    // Collision check against ground/ceiling and pipes (if any)
-    // Skip collision if no pipes exist (performance optimization)
-    if (pipes.length > 0) {
-      const birdRect = { x: current.pos.x, y: posY, width: current.size, height: current.size };
-      const hit = collisionSystem(birdRect, pipes, CONFIG.screen.floorY, 0);
-      if (hit) {
-        store.setGameOverState('gameOver');
-      }
+    // Collision check against ground/ceiling and pipes (always run for floor/ceiling)
+    const birdRect = { x: current.pos.x, y: posY, width: current.size, height: current.size };
+    const hit = collisionSystem(birdRect, pipes, CONFIG.screen.floorY, 0);
+    if (hit) {
+      store.setGameOverState('gameOver');
     }
 
 

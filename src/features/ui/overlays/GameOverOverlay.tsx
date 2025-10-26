@@ -7,6 +7,7 @@ import { BlurView } from 'expo-blur';
 import BestScoreDisplay from '../common/BestScoreDisplay';
 import { overlayStyles } from '../../../styles/styles';
 import { useBestScore } from '@/src/hooks/useScore';
+import * as Haptics from 'expo-haptics';
 export default function GameOverOverlay() {
   const gameState = useGameStore((state) => state.gameState);
   const score = useGameStore((state) => state.score);
@@ -14,14 +15,14 @@ export default function GameOverOverlay() {
   const setGameState = useGameStore((state) => state.setGameState);
   const resetGame = useGameStore((state) => state.resetGame);
   const backToMenu = useGameStore((state) => state.backToMenu);
-  const { newBest, acknowledgeNewBest, triggerConfetti } = useBestScore();
+  const { newBest, acknowledgeNewBest } = useBestScore();
 
   useEffect(() => {
     if (newBest) {
-      triggerConfetti();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       acknowledgeNewBest();
     }
-  }, [newBest, acknowledgeNewBest, triggerConfetti]);
+  }, [newBest, acknowledgeNewBest]);
 
   const handleRestart = () => {
     resetGame();
