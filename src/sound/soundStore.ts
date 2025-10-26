@@ -23,6 +23,8 @@ type SoundState = {
     playBgm: (name: SoundNames) => void;
     stopBgm: () => void;
     pauseBgm: () => void;
+    playLoopingSound: (name: SoundNames) => void;
+    stopLoopingSound: (name: SoundNames) => void;
     unloadSounds: () => void;
 }
 //we should preload the sounds here once the app is loaded
@@ -125,6 +127,31 @@ export const useSoundStore = create<SoundState>((set, get) => ({
     pauseBgm: () => {
         const bgm = get().sounds['fluffy-soundtrack'];
         if (bgm) bgm.pause();
+    },
+
+    playLoopingSound: (name: SoundNames) => {
+        const player = get().sounds[name];
+        if (!player || !player.isLoaded) return;
+        
+        // Stop if already playing to restart cleanly
+        if (player.playing) {
+            player.pause();
+            player.seekTo(0);
+        }
+        
+        player.loop = true;
+        player.volume = get().sfxVolume;
+        player.muted = get().muted;
+        player.play();
+    },
+
+    stopLoopingSound: (name: SoundNames) => {
+        const player = get().sounds[name];
+        if (!player) return;
+        
+        player.loop = false;
+        player.pause();
+        player.seekTo(0);
     },
 
     unloadSounds: () => {
